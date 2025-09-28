@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: uit_music_container
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=0918083733
+      - POSTGRES_DB=uit_music
+    ports:
+      - 5431:5431
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
