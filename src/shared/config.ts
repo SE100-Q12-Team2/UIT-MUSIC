@@ -14,6 +14,10 @@ const ConfigSchema = z.object({
   REFRESH_TOKEN_SECRET: z.string(),
   ACCESS_TOKEN_EXPIRES_IN: z.string(),
   REFRESH_TOKEN_EXPIRES_IN: z.string(),
+  RESET_PASSWORD_TOKEN: z.string(),
+  RESET_PASSWORD_TOKEN_EXPIRES_IN: z.string(),
+  PORT: z.string().optional(),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 })
 
 const configServer = ConfigSchema.safeParse(process.env)
