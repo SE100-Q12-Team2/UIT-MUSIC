@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
-import { AccessTokenPayloadCreate, AccessTokenPayloadReturn } from '../types/jwt.type'
+import { AccessTokenPayloadCreate, AccessTokenPayloadReturn, RefreshTokenPayloadCreate } from '../types/jwt.type'
 import { v4 as uuidv4 } from 'uuid'
 import envConfig from 'src/shared/config'
 
@@ -22,7 +22,7 @@ export class TokenService {
     )
   }
 
-  signRefreshToken(payload: AccessTokenPayloadCreate) {
+  signRefreshToken(payload: RefreshTokenPayloadCreate) {
     return this.jwtService.signAsync(
       {
         ...payload,

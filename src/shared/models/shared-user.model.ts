@@ -12,7 +12,7 @@ export const UserSchema = z.object({
   email: z.string().email({
     message: InvalidEmailError.message,
   }),
-  passwordHash: z
+  password: z
     .string()
     .min(6, {
       message: PasswordMustHaveAtLeast6CharactersError.message,
@@ -21,9 +21,9 @@ export const UserSchema = z.object({
       message: PasswordMustHaveAtMost100CharactersError.message,
     }),
   fullName: z.string().min(1, { message: FullNameMustHaveAtLeast1CharacterError.message }),
-  dateOfBirth: z.date().optional(),
-  gender: GenderEnum.optional(),
-  userRole: UserRoleEnum,
+  dateOfBirth: z.date().nullable(),
+  gender: GenderEnum.nullable(),
+  roleId: z.number().positive(),
   accountStatus: AccountStatusEnum.default('Active'),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),

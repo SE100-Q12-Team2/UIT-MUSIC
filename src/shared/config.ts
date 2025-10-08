@@ -18,6 +18,8 @@ const ConfigSchema = z.object({
   RESET_PASSWORD_TOKEN_EXPIRES_IN: z.string(),
   PORT: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  OTP_EXPIRES_IN: z.string(),
+  RESEND_API_KEY: z.string(),
 })
 
 const configServer = ConfigSchema.safeParse(process.env)

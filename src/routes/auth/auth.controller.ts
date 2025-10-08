@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Ip, Post, Query, Req, Res } from '@nestjs/common'
-import { Response, Request } from 'express'
+import { Body, Controller, Ip, Post } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
   ForgotPasswordBodyDTO,
@@ -8,10 +7,8 @@ import {
   LogoutBodyDTO,
   RegisterBodyDTO,
   RegisterResDTO,
-  ResetPasswordBodyDTO,
 } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
-import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
@@ -19,6 +16,13 @@ import { MessageResDTO } from 'src/shared/dtos/response.dto'
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('otp')
+  @IsPublic()
+  @ZodSerializerDto(MessageResDTO)
+  async sendOTP(@Body() body: SendOTPBodyDTO) {
+    return await this.authService.sendOTP(body)
+  }
 
   @Post('register')
   @IsPublic()
