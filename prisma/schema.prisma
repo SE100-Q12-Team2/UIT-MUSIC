@@ -94,6 +94,14 @@ enum PeriodType {
   Monthly
 }
 
+
+enum VerificationCodeType {
+  REGISTER
+  FORGOT_PASSWORD
+  LOGIN
+  DISABLED_2FA
+}
+
 model User {
   id            Int           @id @default(autoincrement()) @map("user_id")
   email         String        @unique @db.VarChar(255)
@@ -460,4 +468,17 @@ model TrendingSong {
 
   @@unique([songId, periodType, periodStart], name: "unique_song_period")
   @@map("trending_songs")
+}
+
+model VerificationCode {
+  id    Int                  @id @default(autoincrement())
+  email String               @db.VarChar(500)
+  code  String               @db.VarChar(50)
+  type  VerificationCodeType
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, type])
+  @@index([expiresAt])
 }
