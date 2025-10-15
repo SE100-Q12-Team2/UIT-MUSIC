@@ -7,6 +7,7 @@ import {
   LogoutBodyDTO,
   RegisterBodyDTO,
   RegisterResDTO,
+  SendOTPBodyDTO,
 } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'

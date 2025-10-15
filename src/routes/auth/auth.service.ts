@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { EmailAlreadyExistException, EmailNotExistException, ExpiredOTPException, InvalidOTPException, OTPFailedException } from 'src/routes/auth/auth.error'
+import {
+  EmailAlreadyExistException,
+  EmailNotExistException,
+  ExpiredOTPException,
+  InvalidOTPException,
+  OTPFailedException,
+} from 'src/routes/auth/auth.error'
 import { ForgotPasswordBodyType, LoginBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model'
 import { AuthRepository } from 'src/routes/auth/auth.repo'
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
@@ -12,6 +18,9 @@ import { TypeOfVerificationCodeType } from 'src/shared/types/auth.type'
 import { generateOTP } from '../../shared/helpers'
 import envConfig from 'src/shared/config'
 import { addMilliseconds } from 'date-fns'
+import ms from 'ms'
+import { EmailService } from 'src/shared/services/email.service'
+import { emailMessages } from 'src/shared/constants/email.constant'
 
 @Injectable()
 export class AuthService {
@@ -21,6 +30,7 @@ export class AuthService {
     private readonly hashingService: HashingService,
     private readonly sharedRoleRepo: SharedRoleRepository,
     private readonly sharedUserRepo: SharedUserRepository,
+    private readonly emailService: EmailService,
   ) {}
 
   async generateTokens({ userId, roleId, roleName }) {
@@ -61,11 +71,11 @@ export class AuthService {
       },
     })
 
-    if (verificationCode?.code !== code) {
+    if (!verificationCode) {
       throw InvalidOTPException
     }
 
-    if (!verificationCode) {
+    if (verificationCode?.code !== code) {
       throw InvalidOTPException
     }
 
