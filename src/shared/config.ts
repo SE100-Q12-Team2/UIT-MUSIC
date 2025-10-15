@@ -44,6 +44,10 @@ const ConfigSchema = z.object({
   ADMIN_PHONE_NUMBER: z.string(),
   ADMIN_PASSWORD: z.string(),
   RESET_PASSWORD_REDIRECT_URL: z.string(),
+  S3_BUCKET_NAME: z.string(),
+  S3_REGION: z.string(),
+  S3_ACCESS_KEY: z.string(),
+  S3_SECRET_KEY: z.string(),
 })
 
 const parsed = ConfigSchema.safeParse(process.env)
