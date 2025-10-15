@@ -5,6 +5,7 @@ import {
   ExpiredOTPException,
   InvalidOTPException,
   OTPFailedException,
+  RevokedRefreshTokenException,
 } from 'src/routes/auth/auth.error'
 import { ForgotPasswordBodyType, LoginBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model'
 import { AuthRepository } from 'src/routes/auth/auth.repo'
@@ -33,10 +34,11 @@ export class AuthService {
     private readonly emailService: EmailService,
   ) {}
 
-  async generateTokens({ userId, roleId, roleName }) {
+  async generateTokens({ userId, deviceId, roleId, roleName }) {
     const [accessToken, refreshToken] = await Promise.all([
       this.tokenService.signAccessToken({
         userId,
+        deviceId,
         roleId,
         roleName,
       }),
@@ -47,6 +49,7 @@ export class AuthService {
 
     const decodedRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken)
     await this.authRepository.createRefreshToken({
+      deviceId,
       expiresAt: new Date(decodedRefreshToken.exp * 1000),
       token: refreshToken,
       userId,
@@ -180,7 +183,14 @@ export class AuthService {
         ])
       }
 
+      const device = await this.authRepository.createDevice({
+        userId: user.id,
+        ip: body.ip,
+        userAgent: body.userAgent,
+      })
+
       const tokens = await this.generateTokens({
+        deviceId: device.id,
         roleId: user.roleId,
         userId: user.id,
         roleName: user.role.name,
@@ -191,7 +201,28 @@ export class AuthService {
       throw error
     }
   }
-  async logout(token: string) {}
+
+  async logout(token: string) {
+    await this.tokenService.verifyRefreshToken(token)
+
+    const refreshToken = await this.authRepository.findUniqueRefreshTokenIncludeUserRole(token)
+
+    if (!refreshToken) {
+      throw RevokedRefreshTokenException
+    }
+
+    const { deviceId } = refreshToken
+
+    const $updateDeviceStatus = this.authRepository.updateDevice(deviceId, {
+      isActive: false,
+    })
+
+    const $deleteRefreshToken = this.authRepository.deleteRefreshToken(token)
+
+    await Promise.all([$updateDeviceStatus, $deleteRefreshToken])
+
+    return { message: 'Logout successfully' }
+  }
 
   async forgotPassword(forgotPasswordBody: ForgotPasswordBodyType) {}
 }

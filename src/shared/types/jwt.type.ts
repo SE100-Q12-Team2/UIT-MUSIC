@@ -1,5 +1,6 @@
 export type AccessTokenPayloadCreate = {
   userId: number
+  deviceId: number
   roleId: number
   roleName: string
 }
