@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, UnprocessableEntityException } from '@nestjs/common'
 import {
   EmailAlreadyExistException,
   EmailNotExistException,
@@ -159,8 +159,38 @@ export class AuthService {
     }
   }
 
-  async login(body: LoginBodyType & { userAgent: string; ip: string }) {}
+  async login(body: LoginBodyType & { userAgent: string; ip: string }) {
+    try {
+      const user = await this.sharedUserRepo.findUniqueIncRolePermissions({
+        email: body.email,
+      })
 
+      if (!user) {
+        throw EmailNotExistException
+      }
+
+      const isPasswordCorrect = await this.hashingService.compare(body.password, user.password)
+
+      if (!isPasswordCorrect) {
+        throw new UnprocessableEntityException([
+          {
+            message: 'Password is not correct',
+            path: 'password',
+          },
+        ])
+      }
+
+      const tokens = await this.generateTokens({
+        roleId: user.roleId,
+        userId: user.id,
+        roleName: user.role.name,
+      })
+
+      return tokens
+    } catch (error) {
+      throw error
+    }
+  }
   async logout(token: string) {}
 
   async forgotPassword(forgotPasswordBody: ForgotPasswordBodyType) {}
