@@ -19,6 +19,7 @@ enum UserRole {
 
 enum AccountStatus {
   Active
+  Inactive
   Suspended
   Banned
 }
@@ -135,6 +136,7 @@ model User {
   roleId                      Int
   role                        Role                  @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   refreshTokens               RefreshToken[]
+  resetPasswordTokens         ResetPasswordToken[]
   createdPermissions          Permission[]          @relation("PermissionCreatedBy")
   updatedPermissions          Permission[]          @relation("PermissionUpdatedBy")
   deletedPermissions          Permission[]          @relation("PermissionDeletedBy")
@@ -585,4 +587,16 @@ model Device {
   createdAt     DateTime       @default(now())
   isActive      Boolean        @default(true) // Trạng thái thiết bị (đang login hay đã logout)
   refreshTokens RefreshToken[] // Liên kết 1-n với RefreshToken
+}
+
+model ResetPasswordToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @db.VarChar(1000) @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@index([userId])
 }

@@ -8,6 +8,7 @@ import {
   LogoutBodyDTO,
   RegisterBodyDTO,
   RegisterResDTO,
+  ResetPasswordBodyDTO,
   SendOTPBodyDTO,
 } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
@@ -55,5 +56,12 @@ export class AuthController {
   @ZodSerializerDto(MessageResDTO)
   async forgotPassword(@Body() forgotPasswordBody: ForgotPasswordBodyDTO) {
     return await this.authService.forgotPassword(forgotPasswordBody)
+  }
+
+  @Post('reset-password')
+  @IsPublic()
+  @ZodSerializerDto(MessageResDTO)
+  async resetPassword(@Body() body: ResetPasswordBodyDTO) {
+    return await this.authService.resetPasswordWithToken(body)
   }
 }

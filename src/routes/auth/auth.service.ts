@@ -4,10 +4,11 @@ import {
   EmailNotExistException,
   ExpiredOTPException,
   InvalidOTPException,
+  InvalidResetTokenException,
   OTPFailedException,
   RevokedRefreshTokenException,
 } from 'src/routes/auth/auth.error'
-import { ForgotPasswordBodyType, LoginBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model'
+import { ForgotPasswordBodyType, LoginBodyType, RegisterBodyType, ResetPasswordBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model'
 import { AuthRepository } from 'src/routes/auth/auth.repo'
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
 import { isUniqueConstraintPrismaError } from 'src/shared/helpers'
@@ -19,9 +20,10 @@ import { TypeOfVerificationCodeType } from 'src/shared/types/auth.type'
 import { generateOTP } from '../../shared/helpers'
 import envConfig from 'src/shared/config'
 import { addMilliseconds } from 'date-fns'
-import ms from 'ms'
+import ms, { StringValue } from 'ms'
 import { EmailService } from 'src/shared/services/email.service'
 import { emailMessages } from 'src/shared/constants/email.constant'
+import { SharedResetPasswordTokenRepo } from 'src/shared/repository/shared-reset-password-token.repo'
 
 @Injectable()
 export class AuthService {
@@ -31,6 +33,7 @@ export class AuthService {
     private readonly hashingService: HashingService,
     private readonly sharedRoleRepo: SharedRoleRepository,
     private readonly sharedUserRepo: SharedUserRepository,
+    private readonly sharedResetPasswordTokenRepo: SharedResetPasswordTokenRepo,
     private readonly emailService: EmailService,
   ) {}
 
@@ -224,5 +227,94 @@ export class AuthService {
     return { message: 'Logout successfully' }
   }
 
-  async forgotPassword(forgotPasswordBody: ForgotPasswordBodyType) {}
+  async forgotPassword(forgotPasswordBody: ForgotPasswordBodyType) {
+    try {
+      const user = await this.sharedUserRepo.findUnique({
+        email: forgotPasswordBody.email,
+      })
+
+      if (!user) {
+        throw EmailNotExistException
+      }
+
+      await this.sharedResetPasswordTokenRepo.deleteExistingResetTokens(user.id)
+
+      const resetPasswordToken = await this.tokenService.signResetPasswordToken({
+        userId: user.id,
+        email: user.email,
+      })
+
+      const decodedResetPasswordToken = await this.tokenService.verifyResetPasswordToken(resetPasswordToken)
+      const expMs = decodedResetPasswordToken?.exp
+        ? decodedResetPasswordToken.exp * 1000
+        : Date.now() + ms(envConfig.RESET_PASSWORD_TOKEN_EXPIRES_IN as StringValue)
+
+      await this.sharedResetPasswordTokenRepo.createResetToken({
+        token: resetPasswordToken,
+        userId: user.id,
+        expiresAt: new Date(expMs),
+      })
+
+      await this.emailService.sendOTP({
+        email: user.email,
+        type: TypeOfVerificationCode.FORGOT_PASSWORD,
+        username: user.fullName,
+        resetPasswordToken,
+      })
+
+      return {
+        message: "Reset password link's been sent to your email",
+      }
+    } catch (error) {
+      console.log('error', error)
+    }
+  }
+
+  async resetPasswordWithToken(body: ResetPasswordBodyType) {
+    try {
+      await this.tokenService.verifyResetPasswordToken(body.resetToken)
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      console.log('error token', error)
+      throw InvalidResetTokenException
+    }
+
+    const resetToken = await this.sharedResetPasswordTokenRepo.findResetPasswordToken(body.resetToken)
+
+    if (!resetToken) {
+      throw InvalidResetTokenException
+    }
+
+    if (resetToken.expiresAt.getTime() <= Date.now()) {
+      console.log('resetToken.expiresAt', resetToken.expiresAt, 'now', new Date())
+      throw InvalidResetTokenException
+    }
+
+    const user = await this.sharedUserRepo.findUnique({
+      id: resetToken.userId,
+    })
+
+    if (!user) {
+      throw EmailNotExistException
+    }
+
+    const hashedPassword = await this.hashingService.hash(body.newPassword)
+
+    await Promise.all([
+      this.sharedUserRepo.updateProfile({
+        where: {
+          id: user.id,
+        },
+        data: {
+          password: hashedPassword,
+          updatedById: user.id,
+        },
+      }),
+      this.sharedResetPasswordTokenRepo.deleteResetPasswordToken(body.resetToken),
+      this.authRepository.deleteRefreshTokenByUserId(user.id),
+    ])
+
+    return { message: 'Đặt lại mật khẩu thành công, vui lòng đăng nhập lại' }
+  }
 }

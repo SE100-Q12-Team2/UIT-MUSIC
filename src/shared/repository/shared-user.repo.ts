@@ -40,4 +40,23 @@ export class SharedUserRepository {
       },
     })
   }
+
+  async updateProfile({
+    where,
+    data,
+  }: {
+    where: { id: number }
+    data: Partial<UserType>
+  }): Promise<Omit<UserType, 'totpSecret' | 'password'>> {
+    return await this.prismaService.user.update({
+      where: {
+        ...where,
+        deletedAt: null,
+      },
+      data: {
+        ...data,
+        updatedById: where.id,
+      },
+    })
+  }
 }

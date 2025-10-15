@@ -43,6 +43,7 @@ const ConfigSchema = z.object({
   ADMIN_NAME: z.string(),
   ADMIN_PHONE_NUMBER: z.string(),
   ADMIN_PASSWORD: z.string(),
+  RESET_PASSWORD_REDIRECT_URL: z.string(),
 })
 
 const parsed = ConfigSchema.safeParse(process.env)

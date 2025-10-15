@@ -5,6 +5,7 @@ import envConfig from 'src/shared/config'
 import OTPVerificationEmail from 'emails/otp'
 import { TypeOfVerificationCodeType } from 'src/shared/types/auth.type'
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
+import ResetPasswordEmail from 'emails/reset-password'
 
 @Injectable()
 export class EmailService {
@@ -30,16 +31,16 @@ export class EmailService {
           subject: 'Verify your account registration',
           template: <OTPVerificationEmail validationCode={code} />,
         }
-      // case 'FORGOT_PASSWORD':
-      //   return {
-      //     subject: 'Reset your password',
-      //     template: (
-      //       <ResetPasswordEmail
-      //         userName={username}
-      //         resetUrl={`${envConfig.RESET_PASSWORD_REDIRECT_URL}?token=${resetPasswordToken}`}
-      //       />
-      //     ),
-      //   }
+      case 'FORGOT_PASSWORD':
+        return {
+          subject: 'Reset your password',
+          template: (
+            <ResetPasswordEmail
+              userName={username}
+              resetUrl={`${envConfig.RESET_PASSWORD_REDIRECT_URL}?token=${resetPasswordToken}`}
+            />
+          ),
+        }
       default:
         return {
           subject: 'Verify your account registration',

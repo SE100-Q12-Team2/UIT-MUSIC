@@ -114,4 +114,12 @@ export class AuthRepository {
       },
     })
   }
+
+  async deleteRefreshTokenByUserId(userId: number) {
+    return await this.prismaService.refreshToken.deleteMany({
+      where: {
+        userId,
+      },
+    })
+  }
 }

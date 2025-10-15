@@ -27,6 +27,8 @@ export const UserSchema = z.object({
   accountStatus: AccountStatusEnum.default('Active'),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
+  createdById: z.number().nullable(),
+  updatedById: z.number().nullable(),
 })
 
 export type UserType = z.infer<typeof UserSchema>
