@@ -113,6 +113,19 @@ enum HTTPMethod {
   HEAD
 }
 
+enum MediaStatus {
+  Uploaded
+  Processing
+  Ready
+  Failed
+}
+
+enum RenditionType {
+  MP3
+  HLS
+}
+
+
 model User {
   id            Int           @id @default(autoincrement()) @map("user_id")
   email         String        @unique @db.VarChar(255)
@@ -295,6 +308,7 @@ model Song {
   copyrightStatus CopyrightStatus @default(Clear) @map("copyright_status")
   playCount       BigInt          @default(0) @map("play_count")
 
+  asset          Asset?    // 1 bài ↔ 1 asset (master)
   album            Album?             @relation(fields: [albumId], references: [id])
   genre            Genre?             @relation(fields: [genreId], references: [id])
   label            RecordLabel        @relation(fields: [labelId], references: [id])
@@ -374,7 +388,7 @@ model ListeningHistory {
   songId           Int      @map("song_id")
   playedAt         DateTime @default(now()) @map("played_at")
   durationListened Int?     @map("duration_listened")
-  audioQuality     String?  @map("audio_quality") @db.VarChar(20)
+  audioQuality     AudioQuality?  @map("audio_quality")  
   deviceInfo       String?  @map("device_info") @db.VarChar(255)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -583,10 +597,10 @@ model Device {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   userAgent     String
   ip            String
-  lastActive    DateTime       @updatedAt // Thay updatedAt bằng lastActive cho ý nghĩa rõ hơn
+  lastActive    DateTime       @updatedAt 
   createdAt     DateTime       @default(now())
-  isActive      Boolean        @default(true) // Trạng thái thiết bị (đang login hay đã logout)
-  refreshTokens RefreshToken[] // Liên kết 1-n với RefreshToken
+  isActive      Boolean        @default(true) 
+  refreshTokens RefreshToken[] 
 }
 
 model ResetPasswordToken {
@@ -599,4 +613,48 @@ model ResetPasswordToken {
 
   @@index([expiresAt])
   @@index([userId])
+}
+
+model Asset {
+  id           Int         @id @default(autoincrement())
+  songId       Int         @unique
+  bucket       String
+  keyMaster    String    
+  mimeMaster   String
+  durationSec  Int?
+  loudnessI    Float?
+  status       MediaStatus @default(Uploaded)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  song         Song        @relation(fields: [songId], references: [id], onDelete: Cascade)
+  renditions   Rendition[]
+
+  @@unique([bucket, keyMaster])
+  @@index([songId, status])
+
+}
+
+model Rendition {
+  id              Int           @id @default(autoincrement())
+  assetId         Int
+  type            RenditionType // HLS|MP3
+  quality         AudioQuality
+  bitrateKbps     Int?
+  codec           String?
+  bucket          String
+  key             String
+  mime            String
+  sizeBytes       BigInt?
+  status          MediaStatus   @default(Ready)
+  hlsSegmentPrefix String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  asset           Asset         @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, type, quality]) 
+  @@unique([bucket, key])          
+  @@index([assetId, type, quality])
+  @@index([type, quality])
 }
