@@ -6,6 +6,7 @@ import { SharedUserRepository } from 'src/shared/repository/shared-user.repo'
 import { PrismaService } from 'src/shared/services'
 import { EmailService } from 'src/shared/services/email.service'
 import { HashingService } from 'src/shared/services/hashing.service'
+import { S3IngestService } from 'src/shared/services/s3.service'
 import { TokenService } from 'src/shared/services/token.service'
 
 const sharedServices = [
@@ -14,6 +15,7 @@ const sharedServices = [
   SharedUserRepository,
   TokenService,
   HashingService,
+  S3IngestService,
   SharedRoleRepository,
   SharedResetPasswordTokenRepo,
 ]

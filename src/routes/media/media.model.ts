@@ -28,14 +28,14 @@ export const GetPresignedUrlResSchema = z.object({
   expiresIn: z.number(),
 })
 
-export const CreateMasterUploadBody = z.object({
+export const CreateMasterUploadBodySchema = z.object({
   songId: z.number().int().positive(),
   fileName: z.string().min(1),
   ext: z.string().optional(),
   tenant: z.string().default('app'),
 })
 
-export const IngestCompleteBody = z.object({
+export const IngestCompleteBodySchema = z.object({
   songId: z.number().int().positive(),
   assetId: z.number().int().positive().optional(),
   masterKey: z.string(),
@@ -61,6 +61,6 @@ export const GetPlaybackQuery = z.object({
 
 export type GetPresignedUrlBodyType = z.infer<typeof GetPresignedUrlBodySchema>
 export type GetPresignedUrlResType = z.infer<typeof GetPresignedUrlResSchema>
-export type CreateMasterUploadBodyType = z.infer<typeof CreateMasterUploadBody>
-export type IngestCompleteBodyType = z.infer<typeof IngestCompleteBody>
+export type CreateMasterUploadBodyType = z.infer<typeof CreateMasterUploadBodySchema>
+export type IngestCompleteBodyType = z.infer<typeof IngestCompleteBodySchema>
 export type GetPlaybackQueryType = z.infer<typeof GetPlaybackQuery>

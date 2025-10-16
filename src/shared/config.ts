@@ -48,6 +48,10 @@ const ConfigSchema = z.object({
   S3_REGION: z.string(),
   S3_ACCESS_KEY: z.string(),
   S3_SECRET_KEY: z.string(),
+  INGEST_TOKEN: z.string(),
+  CF_PRIVATE_KEY: z.string(),
+  CF_KEY_PAIR_ID: z.string(),
+  CF_DOMAIN: z.string()
 })
 
 const parsed = ConfigSchema.safeParse(process.env)
