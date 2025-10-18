@@ -25,7 +25,8 @@ export class S3IngestService {
       Key: key,
       ContentType: contentType ?? 'application/octet-stream',
     })
-    const url = await getSignedUrl(this.s3, cmd, { expiresIn: expires })
-    return { url, bucket: env.S3_BUCKET_NAME, key }
+
+    const presignedUrl = await getSignedUrl(this.s3, cmd, { expiresIn: expires })
+    return { presignedUrl, bucket: env.S3_BUCKET_NAME, key, contentType, expiresIn: expires }
   }
 }

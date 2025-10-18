@@ -9,6 +9,7 @@
     "init-script": "ts-node initialScript/init-role-user.ts",
     "create-permissions": "ts-node initialScript/create-permissions.ts",
     "init-role-user": "ts-node initialScript/init-role-user.ts",
+    "init-song": "ts-node initialScript/init-song.ts",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",

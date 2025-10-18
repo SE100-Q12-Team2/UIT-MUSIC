@@ -40,6 +40,8 @@ export const IngestCompleteBodySchema = z.object({
   assetId: z.number().int().positive().optional(),
   masterKey: z.string(),
   durationSec: z.number().int().optional(),
+  masterBucket: z.string().optional(),
+  mimeMaster: z.string().optional(),
   loudnessI: z.number().optional(),
   renditions: z.array(
     z.object({
@@ -51,6 +53,7 @@ export const IngestCompleteBodySchema = z.object({
       mime: z.string(),
       sizeBytes: z.number().int().optional(),
       hlsSegmentPrefix: z.string().optional(),
+      bucket: z.string(),
     }),
   ),
 })

@@ -22,7 +22,7 @@ export class AssetService {
     if (!song) throw new NotFoundException('Song not found')
 
     const key = this.s3Ingest.makeMasterKey(songId, fileName, tenant)
-    const { url, bucket } = await this.s3Ingest.createPresignedPutUrl(key)
+    const { presignedUrl, bucket } = await this.s3Ingest.createPresignedPutUrl(key)
 
     const asset = await this.prisma.asset.upsert({
       where: { songId: songId },
@@ -41,6 +41,6 @@ export class AssetService {
       },
     })
 
-    return { presignedUrl: url, bucket, key, assetId: asset.id }
+    return { presignedUrl, bucket, key, assetId: asset.id }
   }
 }
