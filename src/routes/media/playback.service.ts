@@ -3,7 +3,7 @@ import env from 'src/shared/config'
 import { createSign } from 'crypto'
 import { GetPlaybackQuery, GetPlaybackQueryType } from 'src/routes/media/media.model'
 import { PrismaService } from 'src/shared/services'
-import { toPublicUrlFromRendition } from 'src/shared/lib/media'
+import { toPublicUrlFromRendition } from 'src/shared/lib'
 
 type SignUrlParams = { url: string; expiresInSec: number }
 

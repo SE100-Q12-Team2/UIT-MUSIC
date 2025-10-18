@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common'
 import { AssetService } from './asset.service'
-import { CreateMasterUploadBodySchema, CreateMasterUploadBodyType } from 'src/routes/media/media.model'
+import { CreateMasterUploadBodyType } from 'src/routes/media/media.model'
 
 @Controller('media')
 export class AssetController {
