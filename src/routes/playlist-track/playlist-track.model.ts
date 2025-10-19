@@ -1,4 +1,5 @@
 // src/routes/playlist-tracks/playlist-tracks.model.ts
+import { PlaylistSongSchema } from 'src/routes/playlist/playlist.model'
 import z from 'zod'
 
 export const ListPlaylistTracksQuerySchema = z.object({
@@ -18,6 +19,14 @@ export const ListPlaylistTracksQuerySchema = z.object({
 
   artistId: z.coerce.number().int().optional(),
   artistName: z.string().trim().optional(),
+})
+
+export const GetPlaylistTracksResSchema = z.object({
+  data: z.array(PlaylistSongSchema),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+  totalItems: z.number().int(),
+  limit: z.number().int(),
 })
 
 export const AddTrackBodySchema = z
@@ -51,3 +60,4 @@ export type ReorderTrackBody = z.infer<typeof ReorderTrackBodySchema>
 export type ListPlaylistTracksQuery = z.infer<typeof ListPlaylistTracksQuerySchema>
 export type BulkAddTracksBody = z.infer<typeof BulkAddTracksBodySchema>
 export type AddTrackBody = z.infer<typeof AddTrackBodySchema>
+export type GetPlaylistTracksResType = z.infer<typeof GetPlaylistTracksResSchema>

@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
 import { ZodSerializerDto, ZodValidationPipe } from 'nestjs-zod'
+import { GetPlaylistTracksResDTO } from 'src/routes/playlist-track/playlist-track.dto'
 import {
   AddTrackBodySchema,
   BulkAddTracksBodySchema,
@@ -15,6 +16,7 @@ export class PlaylistTracksController {
   constructor(private readonly service: PlaylistTracksService) {}
 
   @Get()
+  @ZodSerializerDto(GetPlaylistTracksResDTO)
   async list(
     @Param('playlistId') playlistId: string,
     @Query(new ZodValidationPipe(ListPlaylistTracksQuerySchema)) query,

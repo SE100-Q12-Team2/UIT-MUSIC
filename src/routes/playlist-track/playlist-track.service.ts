@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
-import { AddTrackBody, BulkAddTracksBody, ListPlaylistTracksQuery, ReorderTrackBody } from 'src/routes/playlist-track/playlist-track.model'
+import { AddTrackBody, BulkAddTracksBody, GetPlaylistTracksResType, ListPlaylistTracksQuery, ReorderTrackBody } from 'src/routes/playlist-track/playlist-track.model'
 import { PlaylistTracksRepository } from 'src/routes/playlist-track/playlist-track.repo'
 
 const STEP = 1000
@@ -12,7 +12,7 @@ export class PlaylistTracksService {
     private readonly events: EventEmitter2,
   ) {}
 
-  async list(playlistId: number, q: ListPlaylistTracksQuery) {
+  async list(playlistId: number, q: ListPlaylistTracksQuery): Promise<GetPlaylistTracksResType> {
     await this.repo.ensurePlaylist(playlistId)
     return this.repo.list(playlistId, q)
   }

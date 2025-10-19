@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { ListPlaylistTracksQuery } from 'src/routes/playlist-track/playlist-track.model'
+import { GetPlaylistTracksResType, ListPlaylistTracksQuery } from 'src/routes/playlist-track/playlist-track.model'
 import { PrismaService } from 'src/shared/services'
 
 const STEP = 1000
@@ -21,7 +21,7 @@ export class PlaylistTracksRepository {
     })
   }
 
-  async list(playlistId: number, q: ListPlaylistTracksQuery) {
+  async list(playlistId: number, q: ListPlaylistTracksQuery): Promise<GetPlaylistTracksResType> {
     const where: Prisma.PlaylistSongWhereInput = { playlistId }
 
     // addedAt range
@@ -81,7 +81,7 @@ export class PlaylistTracksRepository {
     const orderBy: Prisma.PlaylistSongOrderByWithRelationInput[] = [{ [q.sort]: q.order }]
 
     // QUERY song song
-    const [rows, total] = await this.prisma.$transaction([
+    const [data, total] = await this.prisma.$transaction([
       this.prisma.playlistSong.findMany({
         where,
         orderBy,
@@ -103,7 +103,7 @@ export class PlaylistTracksRepository {
     ])
 
     return {
-      data: rows,
+      data,
       page: q.page,
       totalPages: Math.ceil(total / q.limit),
       totalItems: total,

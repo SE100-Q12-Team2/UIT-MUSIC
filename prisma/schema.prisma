@@ -125,7 +125,6 @@ enum RenditionType {
   HLS
 }
 
-
 model User {
   id            Int           @id @default(autoincrement()) @map("user_id")
   email         String        @unique @db.VarChar(255)
@@ -313,7 +312,6 @@ model Song {
   genre            Genre?             @relation(fields: [genreId], references: [id])
   label            RecordLabel        @relation(fields: [labelId], references: [id])
   songArtists      SongArtist[]
-  audioFiles       AudioFile[]
   playlistSongs    PlaylistSong[]
   listeningHistory ListeningHistory[]
   userRatings      UserSongRating[]
@@ -337,20 +335,6 @@ model SongArtist {
 
   @@id([songId, artistId])
   @@map("song_artists")
-}
-
-model AudioFile {
-  id        Int          @id @default(autoincrement()) @map("file_id")
-  songId    Int          @map("song_id")
-  quality   AudioQuality
-  filePath  String       @map("file_path") @db.VarChar(500)
-  fileSize  BigInt       @map("file_size")
-  isMaster  Boolean      @default(false) @map("is_master")
-  createdAt DateTime     @default(now()) @map("created_at")
-
-  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
-
-  @@map("audio_files")
 }
 
 model Playlist {
