@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { GetAllPlaylistResType, GetPlaylistQueryType } from 'src/routes/playlist/playlist.model'
 import { PlaylistRepository } from 'src/routes/playlist/playlist.repo'
 
@@ -11,6 +11,10 @@ export class PlaylistService {
   }
 
   async getPlaylistById(id: number) {
-    return this.playlistRepository.findById(id)
+    const playlist = await this.playlistRepository.findById(id)
+    if (!playlist) {
+      throw new NotFoundException('Playlist not found')
+    }
+    return playlist
   }
 }

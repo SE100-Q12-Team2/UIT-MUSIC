@@ -14,7 +14,7 @@ export class PlaylistController {
   }
 
   @Get(':id')
-  getPlayListById(@Param() id: number) {
-    return this.playlistService.getPlaylistById(id)
+  getPlayListById(@Param('id') id: string) {
+    return this.playlistService.getPlaylistById(Number(id))
   }
 }
