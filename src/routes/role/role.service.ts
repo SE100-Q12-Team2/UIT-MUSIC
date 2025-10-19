@@ -9,7 +9,7 @@ import {
 import { CreateRoleBodyType, GetRoleQueryType, UpdateRoleBodyType } from 'src/routes/role/role.model'
 import { RoleRepository } from 'src/routes/role/role.repo'
 import { Role } from 'src/shared/constants/role.constant'
-import { NotFoundRecordException } from 'src/shared/error'
+import { NotFoundRecordException } from 'src/shared/errors'
 import { isNotFoundPrismaError, isUniqueConstraintPrismaError } from 'src/shared/lib'
 
 @Injectable()
@@ -25,7 +25,7 @@ export class RoleService {
       throw NotFoundRecordException
     }
 
-    const baseRoles: string[] = [Role.ADMIN, Role.CLIENT, Role.SELLER]
+    const baseRoles: string[] = [Role.ADMIN, Role.LISTENER, Role.LABEL]
     if (baseRoles.includes(role.name)) {
       throw ProhibitedActionOnBaseRoleException
     }

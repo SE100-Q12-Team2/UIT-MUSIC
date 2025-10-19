@@ -51,7 +51,9 @@ const ConfigSchema = z.object({
   INGEST_TOKEN: z.string(),
   CF_PRIVATE_KEY: z.string(),
   CF_KEY_PAIR_ID: z.string(),
-  CF_DOMAIN: z.string()
+  CF_DOMAIN: z.string(),
+  PAYMENT_API_KEY_SECRET: z.string(),
+  REDIS_CLOUD_URL: z.string(),
 })
 
 const parsed = ConfigSchema.safeParse(process.env)
