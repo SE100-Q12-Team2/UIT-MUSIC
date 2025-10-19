@@ -1,10 +1,12 @@
-import { AccountStatusEnum, GenderEnum, UserRoleEnum } from 'src/shared/constants/user.constant'
+import { PermissionSchema } from 'src/routes/permission/permission.model'
+import { AccountStatusEnum, GenderEnum } from 'src/shared/constants/user.constant'
 import {
   FullNameMustHaveAtLeast1CharacterError,
   InvalidEmailError,
   PasswordMustHaveAtLeast6CharactersError,
   PasswordMustHaveAtMost100CharactersError,
 } from 'src/shared/errors'
+import { RoleSchema } from 'src/shared/models/shared-role.model'
 import z from 'zod'
 
 export const UserSchema = z.object({
@@ -30,5 +32,26 @@ export const UserSchema = z.object({
   createdById: z.number().nullable(),
   updatedById: z.number().nullable(),
 })
+
+export const GetUserProfileSchema = UserSchema.omit({
+  totpSecret: true,
+  password: true,
+}).extend({
+  role: RoleSchema.pick({
+    id: true,
+    name: true,
+  }).extend({
+    permissions: z.array(
+      PermissionSchema.pick({
+        name: true,
+        path: true,
+        method: true,
+        module: true,
+      }),
+    ),
+  }),
+})
+
+export type GetUserProfileSchema = z.infer<typeof GetUserProfileSchema>
 
 export type UserType = z.infer<typeof UserSchema>
