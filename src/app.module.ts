@@ -10,6 +10,7 @@ import { createKeyv } from '@keyv/redis'
 import { PlaylistModule } from 'src/routes/playlist/playlist.module'
 import { ProfileModule } from 'src/routes/profile/profile.module'
 import { PlaylistTracksModule } from 'src/routes/playlist-track/playlist-track.module'
+import { ArtistModule } from 'src/routes/artist/artist.module'
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { PlaylistTracksModule } from 'src/routes/playlist-track/playlist-track.m
     PlaylistModule,
     ProfileModule,
     PlaylistTracksModule,
+    ArtistModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {
