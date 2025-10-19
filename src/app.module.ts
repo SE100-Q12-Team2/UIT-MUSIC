@@ -7,12 +7,14 @@ import { MediaModule } from 'src/routes/media/media.module'
 import { CacheModule } from '@nestjs/cache-manager'
 import envConfig from 'src/shared/config'
 import { createKeyv } from '@keyv/redis'
+import { PlaylistModule } from 'src/routes/playlist/playlist.module'
 
 @Module({
   imports: [
     SharedModule,
     AuthModule,
     MediaModule,
+    PlaylistModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {

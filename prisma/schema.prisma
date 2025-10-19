@@ -358,7 +358,9 @@ model Playlist {
   userId       Int      @map("user_id")
   playlistName String   @map("playlist_name") @db.VarChar(255)
   description  String?
-  isFavorite   Boolean  @default(false) @map("is_favorite")
+  coverImageUrl String?  @map("cover_image_url") @db.VarChar(500)
+  tags          String[]             
+  isFavorite    Boolean  @default(false) @map("is_favorite")
   isPublic     Boolean  @default(false) @map("is_public")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -370,6 +372,7 @@ model Playlist {
 }
 
 model PlaylistSong {
+  id         Int      @id @default(autoincrement())
   playlistId Int      @map("playlist_id")
   songId     Int      @map("song_id")
   position   Int
@@ -378,7 +381,7 @@ model PlaylistSong {
   playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
   song     Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
 
-  @@id([playlistId, songId])
+  @@unique([playlistId, songId])
   @@map("playlist_songs")
 }
 
@@ -657,4 +660,14 @@ model Rendition {
   @@unique([bucket, key])          
   @@index([assetId, type, quality])
   @@index([type, quality])
+}
+
+
+model Favorite {
+  userId   BigInt
+  trackId  BigInt
+  likedAt  DateTime @default(now())
+
+  @@id([userId, trackId]) 
+  @@index([likedAt])
 }
