@@ -9,6 +9,7 @@ import envConfig from 'src/shared/config'
 import { createKeyv } from '@keyv/redis'
 import { PlaylistModule } from 'src/routes/playlist/playlist.module'
 import { ProfileModule } from 'src/routes/profile/profile.module'
+import { PlaylistTracksModule } from 'src/routes/playlist-track/playlist-track.module'
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ProfileModule } from 'src/routes/profile/profile.module'
     MediaModule,
     PlaylistModule,
     ProfileModule,
+    PlaylistTracksModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {

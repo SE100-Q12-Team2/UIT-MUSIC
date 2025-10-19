@@ -297,7 +297,7 @@ model Song {
   id              Int             @id @default(autoincrement()) @map("song_id")
   title           String          @db.VarChar(255)
   description     String?
-  duration        Int // Duration in seconds
+  duration        Int 
   language        String?         @db.VarChar(50)
   lyrics          String?
   albumId         Int?            @map("album_id")
@@ -308,7 +308,7 @@ model Song {
   copyrightStatus CopyrightStatus @default(Clear) @map("copyright_status")
   playCount       BigInt          @default(0) @map("play_count")
 
-  asset          Asset?    // 1 bài ↔ 1 asset (master)
+  asset          Asset?   
   album            Album?             @relation(fields: [albumId], references: [id])
   genre            Genre?             @relation(fields: [genreId], references: [id])
   label            RecordLabel        @relation(fields: [labelId], references: [id])
