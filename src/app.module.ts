@@ -8,6 +8,7 @@ import { CacheModule } from '@nestjs/cache-manager'
 import envConfig from 'src/shared/config'
 import { createKeyv } from '@keyv/redis'
 import { PlaylistModule } from 'src/routes/playlist/playlist.module'
+import { ProfileModule } from 'src/routes/profile/profile.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PlaylistModule } from 'src/routes/playlist/playlist.module'
     AuthModule,
     MediaModule,
     PlaylistModule,
+    ProfileModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {

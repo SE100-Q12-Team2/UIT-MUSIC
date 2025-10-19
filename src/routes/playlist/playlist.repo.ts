@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { GetAllPlaylistResType, GetPlaylistQueryType } from 'src/routes/playlist/playlist.model'
+import { Prisma } from '@prisma/client'
+import {
+  CreatePlaylistResType,
+  GetAllPlaylistResType,
+  GetPlaylistQueryType,
+  UpdatePlaylistBodyType,
+} from 'src/routes/playlist/playlist.model'
 import { PrismaService } from 'src/shared/services'
 
 @Injectable()
@@ -7,34 +13,43 @@ export class PlaylistRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(query: GetPlaylistQueryType): Promise<GetAllPlaylistResType> {
+    const limit = Math.min(query.limit ?? 20, 50)
+    const skip = ((query.page ?? 1) - 1) * limit
+
+    const where: Prisma.PlaylistWhereInput = {}
+
+    if (query.ownerId) where.userId = Number(query.ownerId)
+    if (typeof query.isPublic === 'boolean') where.isPublic = query.isPublic
+
+    if (query.q && query.q.trim().length) {
+      const q = query.q.trim()
+      Object.assign(where, {
+        OR: [
+          { playlistName: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+          { tags: { has: q } },
+        ],
+      })
+    }
+
+    const orderBy: { [key: string]: 'asc' | 'desc' } = { [query.sort]: query.order }
+
     const [data, totalItems] = await this.prisma.$transaction([
       this.prisma.playlist.findMany({
-        where: {
-          ...(query.ownerId && { userId: query.ownerId }),
-          ...(query.isPublic !== undefined && { isPublic: query.isPublic }),
-          ...(query.tags && { tags: { hasSome: query.tags } }),
-        },
-        orderBy: {
-          [query.sort]: query.order,
-        },
-        take: query.limit,
-        skip: (query.page - 1) * query.limit,
+        where,
+        orderBy,
+        take: limit,
+        skip,
       }),
-      this.prisma.playlist.count({
-        where: {
-          ...(query.ownerId && { userId: query.ownerId }),
-          ...(query.isPublic !== undefined && { isPublic: query.isPublic }),
-          ...(query.tags && { tags: { hasSome: query.tags } }),
-        },
-      }),
+      this.prisma.playlist.count({ where }),
     ])
 
     return {
       data,
       page: query.page,
-      totalPages: Math.ceil(totalItems / query.limit),
+      totalPages: Math.ceil(totalItems / limit),
       totalItems,
-      limit: query.limit,
+      limit,
     }
   }
 
@@ -42,6 +57,31 @@ export class PlaylistRepository {
     return await this.prisma.playlist.findUnique({
       where: { id },
     })
+  }
 
+  async create(body): Promise<CreatePlaylistResType> {
+    return await this.prisma.playlist.create({
+      data: body,
+    })
+  }
+
+  async update(id: number, body: Partial<UpdatePlaylistBodyType>) {
+    return await this.prisma.playlist.update({
+      where: { id },
+      data: {
+        ...body,
+        updatedAt: new Date(),
+      },
+    })
+  }
+
+  async delete(id: number) {
+    await this.prisma.playlist.delete({
+      where: { id },
+    })
+
+    return {
+      message: 'Playlist deleted successfully',
+    }
   }
 }
