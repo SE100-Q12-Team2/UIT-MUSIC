@@ -238,7 +238,9 @@ model Genre {
   genreName   String  @unique @map("genre_name") @db.VarChar(100)
   description String?
   isActive    Boolean @default(true) @map("is_active")
-
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  
   songs Song[]
 
   @@map("genres")
