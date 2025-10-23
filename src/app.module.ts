@@ -11,6 +11,7 @@ import { PlaylistModule } from 'src/routes/playlist/playlist.module'
 import { ProfileModule } from 'src/routes/profile/profile.module'
 import { PlaylistTracksModule } from 'src/routes/playlist-track/playlist-track.module'
 import { ArtistModule } from 'src/routes/artist/artist.module'
+import { GenreModule } from './routes/genre/genre.module'
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ArtistModule } from 'src/routes/artist/artist.module'
     ProfileModule,
     PlaylistTracksModule,
     ArtistModule,
+    GenreModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {
