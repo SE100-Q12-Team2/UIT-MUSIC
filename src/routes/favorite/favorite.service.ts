@@ -4,7 +4,9 @@ import { FavoriteRepository } from 'src/routes/favorite/favorite.repo'
 
 @Injectable()
 export class FavoriteService {
-  constructor(private readonly favoriteRepository: FavoriteRepository) {}
+  constructor(
+    private readonly favoriteRepository: FavoriteRepository,
+  ) {}
 
   async getUserFavorites(query: GetFavoritesQueryType) {
     return await this.favoriteRepository.findAll(query)

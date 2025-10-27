@@ -168,6 +168,7 @@ model User {
   deletedUsers User[] @relation("DeletorUsers")
 
   favorites    Favorite[] @relation("UserFavorites")
+  follows      Follow[]   @relation("UserFollows")
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -663,4 +664,25 @@ model Favorite {
   @@id([userId, songId]) 
   @@index([likedAt])
   @@map("favorites")
+}
+
+enum FollowType {
+  Artist
+  Label
+}
+
+model Follow {
+  id           Int        @id @default(autoincrement())
+  userId       Int        @map("user_id")
+  targetType   FollowType @map("target_type")
+  targetId     Int        @map("target_id")
+  followedAt   DateTime   @default(now()) @map("followed_at")
+
+  user User @relation("UserFollows", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, targetId])
+  @@index([followedAt])
+  @@index([targetType, targetId])
+  @@index([userId])
+  @@map("follows")
 }
