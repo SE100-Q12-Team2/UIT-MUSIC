@@ -15,6 +15,7 @@ import { SearchModule } from 'src/routes/search/search.module'
 import { GenreModule } from 'src/routes/genre/genre.module'
 import { AppService } from 'src/app.service'
 import { AppController } from 'src/app.controller'
+import { SongModule } from 'src/routes/song/song.module'
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AppController } from 'src/app.controller'
     PlaylistTracksModule,
     ArtistModule,
     GenreModule,
+    SongModule,
     FavoriteModule,
     FollowModule,
     SearchModule,
