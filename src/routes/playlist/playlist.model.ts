@@ -3,7 +3,9 @@ import z from 'zod'
 export const PlaylistSchema = z.object({
   id: z.number().int().positive(),
   userId: z.number().int().positive(),
-  playlistName: z.string().min(1).max(255),
+  playlistName: z.string().min(1, {
+    message: "Playlist name must be at least 1 character long"
+  }).max(255),
   description: z.string().nullable(),
   tags: z.string().array().default([]),
   coverImageUrl: z.string().nullable(),

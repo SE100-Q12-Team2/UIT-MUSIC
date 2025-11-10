@@ -13,8 +13,8 @@ export class FavoriteRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(query: GetFavoritesQueryType): Promise<GetFavoritesResponseType> {
-    const limit = Math.min(query.limit ?? 20, 100)
-    const skip = ((query.page ?? 1) - 1) * limit
+    const limit = Math.min(Number(query.limit) || 20, 100)
+    const skip = ((Number(query.page) || 1) - 1) * limit
 
     const where: Prisma.FavoriteWhereInput = {}
 
@@ -73,9 +73,17 @@ export class FavoriteRepository {
       this.prisma.favorite.count({ where }),
     ])
 
+    const formattedFavorites = favorites.map((favorite) => ({
+      ...favorite,
+      song: {
+        ...favorite.song,
+        playCount: Number(favorite.song.playCount),
+      },
+    }))
+
     return {
-      data: favorites as any,
-      page: query.page ?? 1,
+      data: formattedFavorites as any,
+      page: Number(query.page) || 1,
       totalPages: Math.ceil(totalItems / limit),
       totalItems,
       limit,

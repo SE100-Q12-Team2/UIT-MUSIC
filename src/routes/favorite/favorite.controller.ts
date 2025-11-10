@@ -17,7 +17,7 @@ export class FavoriteController {
 
   /**
    * GET /favorites?userId=1&limit=20&page=1&sort=likedAt&order=desc
-   */
+   */ 
   @Get()
   @ZodSerializerDto(GetFavoritesResponseDTO)
   getUserFavorites(@Query() query: GetFavoritesQueryDTO) {

@@ -1,11 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { AddFavoriteBodyType, GetFavoritesQueryType } from 'src/routes/favorite/favorite.model'
 import { FavoriteRepository } from 'src/routes/favorite/favorite.repo'
+import { SharedUserRepository } from 'src/shared/repository/shared-user.repo'
 
 @Injectable()
 export class FavoriteService {
   constructor(
     private readonly favoriteRepository: FavoriteRepository,
+    private readonly sharedUserRepo: SharedUserRepository
   ) {}
 
   async getUserFavorites(query: GetFavoritesQueryType) {
@@ -17,6 +19,14 @@ export class FavoriteService {
   }
 
   async addFavorite(body: AddFavoriteBodyType) {
+    const existingUser = await this.sharedUserRepo.findUnique({
+      id: body.userId,
+    })
+
+    if(!existingUser) {
+      throw new NotFoundException(`User with ID ${body.userId} not found`)
+    }
+    
     const existing = await this.favoriteRepository.findByUserAndSong(body.userId, body.songId)
 
     if (existing) {

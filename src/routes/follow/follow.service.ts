@@ -1,10 +1,15 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { AddFollowBodyType, GetFollowsQueryType } from 'src/routes/follow/follow.model'
 import { FollowRepository } from 'src/routes/follow/follow.repo'
+import { SharedUserRepository } from 'src/shared/repository/shared-user.repo'
+import { PrismaService } from 'src/shared/services'
 
 @Injectable()
 export class FollowService {
-  constructor(private readonly followRepository: FollowRepository) {}
+  constructor(
+    private readonly followRepository: FollowRepository,
+    private readonly sharedUserRepo: SharedUserRepository,
+  ) {}
 
   async getUserFollows(query: GetFollowsQueryType) {
     return await this.followRepository.findAll(query)
@@ -19,6 +24,14 @@ export class FollowService {
   }
 
   async addFollow(body: AddFollowBodyType) {
+    const existingUser = await this.sharedUserRepo.findUnique({
+      id: body.userId,
+    })
+
+      if (!existingUser) {
+      throw new NotFoundException(`User with ID ${body.userId} not found`)
+    }
+
     const existing = await this.followRepository.findByUserAndTarget(body.userId, body.targetType, body.targetId)
 
     if (existing) {
@@ -73,7 +86,32 @@ export class FollowService {
   }
 
   private async verifyTargetExists(targetType: string, targetId: number) {
-   // Artist and RecordLabel validation here 
+    // if (targetType === 'Artist') {
+    //   const artist = await this.prisma.artist.findUnique({
+    //     where: { id: targetId },
+    //   })
+
+    //   if (!artist) {
+    //     throw new NotFoundException(`Artist with ID ${targetId} not found`)
+    //   }
+
+    //   if (!artist.hasPublicProfile) {
+    //     throw new BadRequestException(`Artist with ID ${targetId} does not have a public profile`)
+    //   }
+    // } else if (targetType === 'Label') {
+    //   const label = await this.prisma.recordLabel.findUnique({
+    //     where: { id: targetId },
+    //   })
+
+    //   if (!label) {
+    //     throw new NotFoundException(`Record Label with ID ${targetId} not found`)
+    //   }
+
+    //   if (!label.hasPublicProfile) {
+    //     throw new BadRequestException(`Record Label with ID ${targetId} does not have a public profile`)
+    //   }
+    // }
+
     return true
   }
 }
