@@ -222,62 +222,7 @@ export class SongService {
     const songs = await this.songRepo.findTrendingSongs(limit, genreId, userId)
 
     return {
-      trending: songs.map((song) => this.formatSongResponse(song, userId)),
-    }
-  }
-
-  private formatSongResponse(song: any, userId?: number) {
-    return {
-      id: Number(song.id),
-      title: song.title,
-      description: song.description,
-      duration: song.duration,
-      language: song.language,
-      lyrics: song.lyrics,
-      albumId: song.albumId ? Number(song.albumId) : null,
-      genreId: song.genreId ? Number(song.genreId) : null,
-      labelId: Number(song.labelId),
-      uploadDate: song.uploadDate,
-      isActive: song.isActive,
-      copyrightStatus: song.copyrightStatus,
-      playCount: Number(song.playCount),
-      isFavorite: userId ? song.favorites?.length > 0 : false,
-      songArtists: song.songArtists?.map((sa: any) => ({
-        artistId: Number(sa.artistId),
-        songId: Number(sa.songId),
-        role: sa.role,
-        artist: {
-          id: Number(sa.artist.id),
-          artistName: sa.artist.artistName,
-          profileImage: sa.artist.profileImage,
-        },
-      })),
-      album: song.album
-        ? {
-            id: Number(song.album.id),
-            albumTitle: song.album.albumTitle,
-            coverImage: song.album.coverImage,
-          }
-        : null,
-      genre: song.genre
-        ? {
-            id: Number(song.genre.id),
-            genreName: song.genre.genreName,
-          }
-        : null,
-      label: song.label
-        ? {
-            id: Number(song.label.id),
-            labelName: song.label.labelName,
-          }
-        : undefined,
-      asset: song.asset
-        ? {
-            id: Number(song.asset.id),
-            bucket: song.asset.bucket,
-            keyMaster: song.asset.keyMaster,
-          }
-        : null,
+      items: songs,
     }
   }
 }

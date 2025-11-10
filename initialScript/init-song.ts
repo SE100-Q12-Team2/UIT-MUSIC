@@ -4,11 +4,30 @@ const prisma = new PrismaClient()
 
 async function main() {
   // Tạo Label trước (vì Song cần labelId)
-  const label = await prisma.recordLabel.create({
+  const labelFirst = await prisma.recordLabel.create({
     data: {
       user: {
         create: {
           email: 'label@test.com',
+          password: 'hashed_password_here',
+          fullName: 'Test Label Owner',
+          role: {
+            connect: { id: 2 }, // giả sử RoleId = 2 là Label
+          },
+        },
+      },
+      labelName: 'Test Label',
+      description: 'A demo record label for testing upload feature',
+      contactEmail: 'contact@testlabel.com',
+      hasPublicProfile: true,
+    },
+  })
+
+   const labelSecond = await prisma.recordLabel.create({
+    data: {
+      user: {
+        create: {
+          email: 'label2@test.com',
           password: 'hashed_password_here',
           fullName: 'Test Label Owner',
           role: {
@@ -37,7 +56,7 @@ async function main() {
       albumTitle: 'Test Album',
       albumDescription: 'Demo album for testing',
       releaseDate: new Date(),
-      labelId: label.id,
+      labelId: labelFirst.id,
     },
   })
 
@@ -49,7 +68,7 @@ async function main() {
       duration: 0, // sẽ cập nhật sau khi ingest xong
       albumId: album.id,
       genreId: genre.id,
-      labelId: label.id,
+      labelId: labelFirst.id,
     },
   })
 
@@ -61,7 +80,7 @@ async function main() {
       duration: 0,
       albumId: album.id,
       genreId: genre.id,
-      labelId: label.id,
+      labelId: labelFirst.id,
     },
   })
 
@@ -73,7 +92,7 @@ async function main() {
       duration: 0,
       albumId: album.id,
       genreId: genre.id,
-      labelId: label.id,
+      labelId: labelFirst.id,
     },
   })
 

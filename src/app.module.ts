@@ -16,6 +16,7 @@ import { GenreModule } from 'src/routes/genre/genre.module'
 import { AppService } from 'src/app.service'
 import { AppController } from 'src/app.controller'
 import { SongModule } from 'src/routes/song/song.module'
+import { AlbumModule } from 'src/routes/album/album.module'
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { SongModule } from 'src/routes/song/song.module'
     ArtistModule,
     GenreModule,
     SongModule,
+    AlbumModule,
     FavoriteModule,
     FollowModule,
     SearchModule,
