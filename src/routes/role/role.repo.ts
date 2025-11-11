@@ -124,6 +124,7 @@ export class RoleRepository {
           where: {
             id,
             deletedAt: null,
+            isDeleted: true,
           },
           data: {
             deletedAt: new Date(),

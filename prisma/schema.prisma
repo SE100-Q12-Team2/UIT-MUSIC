@@ -531,6 +531,7 @@ model Role {
   name        String       @db.VarChar(500)
   description String       @default("")
   isActive    Boolean      @default(true)
+  isDeleted   Boolean      @default(false)
   permissions Permission[]
   users       User[]
 
