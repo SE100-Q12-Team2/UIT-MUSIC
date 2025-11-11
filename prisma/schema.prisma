@@ -133,8 +133,10 @@ model User {
   dateOfBirth   DateTime?     @map("date_of_birth") @db.Date
   gender        Gender?
   accountStatus AccountStatus @default(Active) @map("account_status")
+  isDeleted   Boolean       @default(false) @map("is_deleted")
+  profileImage String?       @map("profile_image") @db.VarChar(500)
 
-  devices                     Device[] 
+  devices           Device[] 
   subscriptions     UserSubscription[]
   transactions      Transaction[]
   recordLabel       RecordLabel?

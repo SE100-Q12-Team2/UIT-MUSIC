@@ -18,6 +18,7 @@ import { AppController } from 'src/app.controller'
 import { SongModule } from 'src/routes/song/song.module'
 import { AlbumModule } from 'src/routes/album/album.module'
 import { RecordLabelModule } from 'src/routes/record-label/record-label.module'
+import { UserModule } from 'src/routes/user/user.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RecordLabelModule } from 'src/routes/record-label/record-label.module'
     FavoriteModule,
     FollowModule,
     SearchModule,
+    UserModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {

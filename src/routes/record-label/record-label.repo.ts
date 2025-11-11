@@ -207,6 +207,6 @@ export class RecordLabelRepository {
     return {
       id,
       message: 'Record label deleted successfully',
-    }
+    } 
   }
 }
