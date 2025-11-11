@@ -20,6 +20,7 @@ import { AlbumModule } from 'src/routes/album/album.module'
 import { RecordLabelModule } from 'src/routes/record-label/record-label.module'
 import { UserModule } from 'src/routes/user/user.module'
 import { ListeningHistoryModule } from 'src/routes/listening-history/listening-history.module'
+import { SubscriptionPlanModule } from 'src/routes/subscription-plan/subscription-plan.module'
 import { RoleModule } from 'src/routes/role/role.module'
 
 @Module({
@@ -40,6 +41,7 @@ import { RoleModule } from 'src/routes/role/role.module'
     SearchModule,
     UserModule,
     ListeningHistoryModule,
+    SubscriptionPlanModule,
     RoleModule,
     CacheModule.register({
       isGlobal: true,

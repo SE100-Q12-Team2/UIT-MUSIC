@@ -4,7 +4,15 @@ export const GetRecordLabelsQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(20),
   search: z.string().optional(),
-  hasPublicProfile: z.coerce.boolean().optional(),
+  hasPublicProfile: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (val === undefined || val === '') return undefined
+      if (val === 'true') return true
+      if (val === 'false') return false
+      return undefined
+    }),
   userId: z.coerce.number().int().positive().optional(),
 })
 
