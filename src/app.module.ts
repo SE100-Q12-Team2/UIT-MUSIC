@@ -22,6 +22,7 @@ import { UserModule } from 'src/routes/user/user.module'
 import { ListeningHistoryModule } from 'src/routes/listening-history/listening-history.module'
 import { SubscriptionPlanModule } from 'src/routes/subscription-plan/subscription-plan.module'
 import { UserSubscriptionModule } from 'src/routes/user-subscription/user-subscription.module'
+import { PaymentMethodModule } from 'src/routes/payment-method/payment-method.module'
 import { RoleModule } from 'src/routes/role/role.module'
 
 @Module({
@@ -44,6 +45,7 @@ import { RoleModule } from 'src/routes/role/role.module'
     ListeningHistoryModule,
     SubscriptionPlanModule,
     UserSubscriptionModule,
+    PaymentMethodModule,
     RoleModule,
     CacheModule.register({
       isGlobal: true,
