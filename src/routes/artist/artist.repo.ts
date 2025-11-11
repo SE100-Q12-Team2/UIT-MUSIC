@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
-import { Prisma, PrismaClient } from '@prisma/client'
+import { Injectable } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import {
   CreateArtistBodyType,
   CreateArtistResType,
@@ -60,25 +60,35 @@ export class ArtistRepository {
   }
 
   async findById(id: number) {
-    const artist = await this.prisma.artist.findUnique({ where: { id } })
-    if (!artist) throw new NotFoundException('Artist not found')
-    return artist
+    return await this.prisma.artist.findUnique({ where: { id } })
   }
 
   async create(body: CreateArtistBodyType): Promise<CreateArtistResType> {
-    return this.prisma.artist.create({ data: body })
+    return await this.prisma.artist.create({
+      data: {
+        artistName: body.artistName,
+        biography: body.biography ?? null,
+        profileImage: body.profileImage ?? null,
+        hasPublicProfile: body.hasPublicProfile ?? true,
+      },
+    })
   }
 
   async update(id: number, body: Partial<UpdateArtistBodyType>) {
-    await this.findById(id)
-    return this.prisma.artist.update({
+    const updateData: Prisma.ArtistUpdateInput = {}
+
+    if (body.artistName !== undefined) updateData.artistName = body.artistName
+    if (body.biography !== undefined) updateData.biography = body.biography
+    if (body.profileImage !== undefined) updateData.profileImage = body.profileImage
+    if (body.hasPublicProfile !== undefined) updateData.hasPublicProfile = body.hasPublicProfile
+
+    return await this.prisma.artist.update({
       where: { id },
-      data: { ...body },
+      data: updateData,
     })
   }
 
   async delete(id: number) {
-    await this.findById(id)
     await this.prisma.artist.delete({ where: { id } })
     return { message: 'Artist deleted successfully' }
   }

@@ -1,34 +1,51 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common'
-import { ZodValidationPipe } from 'nestjs-zod'
-import { CreateArtistBodySchema, GetArtistQuerySchema, UpdateArtistBodySchema } from './artist.model'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common'
+import { ZodSerializerDto } from 'nestjs-zod'
+import {
+  CreateArtistBodyDto,
+  CreateArtistResDto,
+  GetArtistQueryDto,
+  GetArtistsResponseDto,
+  UpdateArtistBodyDto,
+  UpdateArtistResDto,
+  ArtistResponseDto,
+} from './artist.dto'
 import { ArtistService } from './artist.service'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
+import { MessageResDTO } from 'src/shared/dtos/response.dto'
 
 @Controller('artists')
+@Auth([AuthType.Bearer])
 export class ArtistController {
   constructor(private readonly service: ArtistService) {}
 
   @Get()
-  list(@Query(new ZodValidationPipe(GetArtistQuerySchema)) query) {
-    return this.service.list(query)
+  @ZodSerializerDto(GetArtistsResponseDto)
+  async list(@Query() query: GetArtistQueryDto) {
+    return await this.service.list(query)
   }
 
   @Get(':id')
-  get(@Param('id') id: string) {
-    return this.service.get(Number(id))
+  @ZodSerializerDto(ArtistResponseDto)
+  async get(@Param('id', ParseIntPipe) id: number) {
+    return await this.service.get(id)
   }
 
   @Post()
-  create(@Body(new ZodValidationPipe(CreateArtistBodySchema)) body) {
-    return this.service.create(body)
+  @ZodSerializerDto(CreateArtistResDto)
+  async create(@Body() body: CreateArtistBodyDto) {
+    return await this.service.create(body)
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body(new ZodValidationPipe(UpdateArtistBodySchema)) body) {
-    return this.service.update(Number(id), body)
+  @ZodSerializerDto(UpdateArtistResDto)
+  async update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateArtistBodyDto) {
+    return await this.service.update(id, body)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.service.remove(Number(id))
+  @ZodSerializerDto(MessageResDTO)
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    return await this.service.remove(id)
   }
 }
