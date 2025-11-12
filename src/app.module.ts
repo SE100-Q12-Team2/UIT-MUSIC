@@ -25,6 +25,7 @@ import { UserSubscriptionModule } from 'src/routes/user-subscription/user-subscr
 import { PaymentMethodModule } from 'src/routes/payment-method/payment-method.module'
 import { RoleModule } from 'src/routes/role/role.module'
 import { TransactionModule } from 'src/routes/transaction/transaction.module'
+import { StatisticsModule } from 'src/routes/statistics/statistics.module'
 
 @Module({
   imports: [
@@ -48,7 +49,8 @@ import { TransactionModule } from 'src/routes/transaction/transaction.module'
     UserSubscriptionModule,
     PaymentMethodModule,
     RoleModule,
-    TransactionModule, 
+    TransactionModule,
+    StatisticsModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {
