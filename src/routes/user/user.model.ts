@@ -56,7 +56,7 @@ export const CreateUserBodySchema = UserSchema.pick({
   password: true,
 })
   .extend({
-    roleId: z.number().int().positive().default(1),
+    roleId: z.number().int().positive().default(6),
     dateOfBirth: z.coerce.date().optional(),
     gender: GenderEnum.optional(),
   })

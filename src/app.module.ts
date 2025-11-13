@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { ScheduleModule } from '@nestjs/schedule'
 import { SharedModule } from 'src/shared/share.module'
 import { AuthModule } from 'src/routes/auth/auth.module'
 import { MediaModule } from 'src/routes/media/media.module'
@@ -26,9 +27,11 @@ import { PaymentMethodModule } from 'src/routes/payment-method/payment-method.mo
 import { RoleModule } from 'src/routes/role/role.module'
 import { TransactionModule } from 'src/routes/transaction/transaction.module'
 import { StatisticsModule } from 'src/routes/statistics/statistics.module'
+import { NotificationModule } from 'src/routes/notification/notification.module'
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     SharedModule,
     AuthModule,
     MediaModule,
@@ -51,6 +54,7 @@ import { StatisticsModule } from 'src/routes/statistics/statistics.module'
     RoleModule,
     TransactionModule,
     StatisticsModule,
+    NotificationModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {
