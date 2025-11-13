@@ -109,7 +109,6 @@ export const VNPayPaymentUrlResponseSchema = z.object({
   txnRef: z.string(),
 })
 
-// SePay specific schemas
 export const SepayCreatePaymentSchema = z.object({
   amount: z.number().positive(),
   content: z.string(),
@@ -140,7 +139,6 @@ export const SepayPaymentQRResponseSchema = z.object({
   txnRef: z.string(),
 })
 
-// Type exports
 export type Transaction = z.infer<typeof TransactionSchema>
 export type CreateTransactionDto = z.infer<typeof CreateTransactionSchema>
 export type UpdateTransactionStatusDto = z.infer<typeof UpdateTransactionStatusSchema>

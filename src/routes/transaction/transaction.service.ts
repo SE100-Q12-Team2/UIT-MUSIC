@@ -9,6 +9,8 @@ import {
   TransactionAlreadyRefundedError,
   SubscriptionNotFoundForTransactionError,
   PaymentMethodNotFoundForTransactionError,
+  TransactionAlreadyProcessedError,
+  InvalidSepaySignatureError,
 } from './transaction.error'
 import { TransactionStatus } from '@prisma/client'
 import { isNotFoundPrismaError } from 'src/shared/lib'
@@ -139,7 +141,7 @@ export class TransactionService {
         const payload = JSON.stringify(webhookData)
         const isValid = this.sepayGateway.verifyWebhookSignature(payload, signature)
         if (!isValid) {
-          throw new Error('Invalid SePay webhook signature')
+          throw InvalidSepaySignatureError()
         }
       }
 
@@ -148,14 +150,11 @@ export class TransactionService {
       const transaction = await this.repository.findByReference(result.txnRef)
       if (!transaction) {
         this.logger.error(`Transaction not found for txnRef: ${result.txnRef}`)
-        throw new Error(`Transaction not found: ${result.txnRef}`)
+        throw TransactionNotFoundError(Number(result.txnRef))
       }
 
       if (transaction.transactionStatus !== TransactionStatus.Pending) {
-        this.logger.warn(
-          `Transaction ${transaction.id} already processed with status: ${transaction.transactionStatus}`,
-        )
-        return transaction
+        throw TransactionAlreadyProcessedError(transaction.id, transaction.transactionStatus)
       }
 
       const newStatus = result.isSuccess ? TransactionStatus.Completed : TransactionStatus.Failed

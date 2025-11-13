@@ -1,19 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common'
 import * as crypto from 'crypto'
-import { PaymentProcessingError, InvalidSepaySignatureError } from './transaction.error'
+import { PaymentProcessingError, SepayApiKeyNotConfiguredError } from './transaction.error'
 
-/**
- * SePay Gateway Service
- * Handles integration with SePay payment gateway
- * Documentation: https://my.sepay.vn/userapi/documents/id/4
- */
 @Injectable()
 export class SepayGatewayService {
   private readonly logger = new Logger(SepayGatewayService.name)
   private readonly sepayApiUrl: string
   private readonly sepayAccountNumber: string
   private readonly sepayAccountName: string
-  private readonly sepaySyncUrl: string
   private readonly sepayApiKey: string
   private readonly sepayWebhookSecret: string
 
@@ -21,7 +15,6 @@ export class SepayGatewayService {
     this.sepayApiUrl = process.env.SEPAY_API_URL || 'https://my.sepay.vn/userapi'
     this.sepayAccountNumber = process.env.SEPAY_ACCOUNT_NUMBER || ''
     this.sepayAccountName = process.env.SEPAY_ACCOUNT_NAME || ''
-    this.sepaySyncUrl = process.env.SEPAY_SYNC_URL || ''
     this.sepayApiKey = process.env.SEPAY_API_KEY || ''
     this.sepayWebhookSecret = process.env.SEPAY_WEBHOOK_SECRET || ''
 
@@ -115,7 +108,6 @@ export class SepayGatewayService {
     }
   }
 
-
   processWebhook(webhookData: any): {
     txnRef: string
     amount: number
@@ -129,7 +121,7 @@ export class SepayGatewayService {
       const txnRefMatch = description.match(/TXN\d+_\d+/)
 
       if (!txnRefMatch) {
-        throw new Error('Transaction reference not found in webhook data')
+        throw PaymentProcessingError('Transaction reference not found in webhook data')
       }
 
       const txnRef = txnRefMatch[0]
@@ -155,7 +147,6 @@ export class SepayGatewayService {
     }
   }
 
-
   async checkTransactionStatus(
     txnRef: string,
     fromDate: string,
@@ -163,10 +154,9 @@ export class SepayGatewayService {
   ): Promise<{ found: boolean; amount?: number; transactionId?: string; date?: string }> {
     try {
       if (!this.sepayApiKey) {
-        throw new Error('SePay API key not configured')
+        throw SepayApiKeyNotConfiguredError
       }
 
-      // Call SePay API to get transaction list
       const response = await fetch(`${this.sepayApiUrl}/transactions`, {
         method: 'GET',
         headers: {
@@ -182,7 +172,6 @@ export class SepayGatewayService {
       const data = await response.json()
       const transactions = data.transactions || []
 
-      // Find transaction by content containing txnRef
       const transaction = transactions.find((t: any) => {
         const content = t.transferContent || t.description || ''
         return content.includes(txnRef)
@@ -204,13 +193,10 @@ export class SepayGatewayService {
     }
   }
 
-  /**
-   * Get account balance from SePay API
-   */
   async getAccountBalance(): Promise<{ balance: number; currency: string }> {
     try {
       if (!this.sepayApiKey) {
-        throw new Error('SePay API key not configured')
+        throw SepayApiKeyNotConfiguredError()
       }
 
       const response = await fetch(`${this.sepayApiUrl}/balance`, {

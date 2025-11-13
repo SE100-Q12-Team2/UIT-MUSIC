@@ -71,3 +71,19 @@ export const SepayPaymentFailedError = (message: string) =>
       message: `SePay payment failed: ${message}`,
     },
   ])
+
+export const TransactionAlreadyProcessedError = (id: number, status: string) =>
+  new BadRequestException([
+    {
+      path: ['id'],
+      message: `Transaction with ID ${id} has already been processed with status ${status}`,
+    },
+  ])
+
+export const SepayApiKeyNotConfiguredError = () =>
+  new BadRequestException([
+    {
+      path: ['sepayApiKey'],
+      message: 'SePay API key not configured',
+    },
+  ])
