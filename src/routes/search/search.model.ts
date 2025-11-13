@@ -4,7 +4,7 @@ import { z } from 'zod'
 export const SearchQuerySchema = z
   .object({
     query: z.string().min(1, 'Query is required').max(255, 'Query is too long'),
-    type: z.nativeEnum(SearchType).optional().default(SearchType.ALL),
+    type: z.enum(SearchType).optional().default(SearchType.ALL),
     page: z.coerce.number().int().min(1, 'Page must be at least 1').optional().default(1),
     limit: z.coerce
       .number()

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { PeriodType } from '@prisma/client'
 
-export const PeriodTypeEnum = z.nativeEnum(PeriodType)
+export const PeriodTypeEnum = z.enum(PeriodType)
 
 export const GetDailyStatsQuerySchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format. Use YYYY-MM-DD'),

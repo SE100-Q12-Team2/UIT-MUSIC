@@ -28,6 +28,7 @@ import { RoleModule } from 'src/routes/role/role.module'
 import { TransactionModule } from 'src/routes/transaction/transaction.module'
 import { StatisticsModule } from 'src/routes/statistics/statistics.module'
 import { NotificationModule } from 'src/routes/notification/notification.module'
+import { AdvertisementModule } from 'src/routes/advertisement/advertisement.module'
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { NotificationModule } from 'src/routes/notification/notification.module'
     TransactionModule,
     StatisticsModule,
     NotificationModule,
+    AdvertisementModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {

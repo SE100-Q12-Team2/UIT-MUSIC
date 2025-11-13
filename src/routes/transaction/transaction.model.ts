@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { TransactionStatus } from '@prisma/client'
 
-export const TransactionStatusEnum = z.nativeEnum(TransactionStatus)
+export const TransactionStatusEnum = z.enum(TransactionStatus)
 
 export const TransactionSchema = z.object({
   id: z.number().int().positive(),
