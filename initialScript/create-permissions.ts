@@ -14,8 +14,34 @@ interface Route {
 
 const prisma = new PrismaService()
 
-const LABEL_MODULE = ['AUTH', 'MANAGE-PRODUCT', 'PROFILE', 'MEDIA', 'CART', 'ORDERS', 'REVIEWS', "ARTISTS", "PLAYLISTS", "SEARCHS", "SONGS"]
-const LISTENER_MODULE = ['AUTH', 'PROFILE', 'MEDIA', 'CART', 'ORDERS', 'REVIEWS', "PLAYLISTS", "ARTISTS", "FOLLOWS", "SEARCHS", "SONGS"]
+const LABEL_MODULE = [
+  'AUTH',
+  'MANAGE-PRODUCT',
+  'PROFILE',
+  'MEDIA',
+  'CART',
+  'ORDERS',
+  'REVIEWS',
+  'ARTISTS',
+  'PLAYLISTS',
+  'SEARCHS',
+  'SONGS',
+  'COPYRIGHT-REPORTS',
+]
+const LISTENER_MODULE = [
+  'AUTH',
+  'PROFILE',
+  'MEDIA',
+  'CART',
+  'ORDERS',
+  'REVIEWS',
+  'PLAYLISTS',
+  'ARTISTS',
+  'FOLLOWS',
+  'SEARCHS',
+  'SONGS',
+  'COPYRIGHT-REPORTS',
+]
 const VALID_HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'] as const
 type ValidHttpMethod = (typeof VALID_HTTP_METHODS)[number]
 

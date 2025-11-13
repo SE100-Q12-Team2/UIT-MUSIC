@@ -77,7 +77,7 @@ enum NotificationType {
 
 enum ReporterType {
   System
-  User
+  Listener
   Label
   External
 }
