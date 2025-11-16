@@ -93,7 +93,6 @@ export class CopyrightReportRepository {
       this.prisma.copyrightReport.count({ where }),
     ])
 
-    // Transform data to include artist name
     const transformedData = data.map((report) => ({
       ...report,
       song: report.song
@@ -220,7 +219,7 @@ export class CopyrightReportRepository {
             artist: report.song.songArtists[0]?.artist.artistName,
           }
         : undefined,
-      reporter: undefined, // Don't expose reporter info to self
+      reporter: undefined, 
     }))
 
     return {

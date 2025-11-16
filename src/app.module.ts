@@ -30,6 +30,7 @@ import { StatisticsModule } from 'src/routes/statistics/statistics.module'
 import { NotificationModule } from 'src/routes/notification/notification.module'
 import { AdvertisementModule } from 'src/routes/advertisement/advertisement.module'
 import { CopyrightReportModule } from 'src/routes/copyright-report/copyright-report.module'
+import { UserSongRatingModule } from 'src/routes/user-song-rating/user-song-rating.module'
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { CopyrightReportModule } from 'src/routes/copyright-report/copyright-rep
     NotificationModule,
     AdvertisementModule,
     CopyrightReportModule,
+    UserSongRatingModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {

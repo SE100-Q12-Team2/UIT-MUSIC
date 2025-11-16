@@ -89,7 +89,6 @@ export class CopyrightReportService {
   }
 
   async updateStatus(id: number, data: UpdateReportStatusDto, roleName?: string) {
-    // Admin check
     if (roleName !== 'ADMIN') {
       throw AdminRoleRequiredException
     }
@@ -100,19 +99,16 @@ export class CopyrightReportService {
       throw CopyrightReportNotFoundException
     }
 
-    // Check if report is already resolved/dismissed
     if (report.status === ReportStatus.Resolved || report.status === ReportStatus.Dismissed) {
       throw ReportAlreadyResolvedException
     }
 
-    // Validate status transition
     this.validateStatusTransition(report.status, data.status)
 
     const updated = await this.repository.updateStatus(id, data.status, data.adminNotes)
 
     this.logger.log(`Updated report ${id} status from ${report.status} to ${data.status}`)
 
-    // If resolved as Violation, update song's copyright status
     if (data.status === ReportStatus.Resolved) {
       await this.updateSongCopyrightStatus(report.songId)
     }
@@ -121,7 +117,6 @@ export class CopyrightReportService {
   }
 
   async delete(id: number, roleName?: string) {
-    // Admin check
     if (roleName !== 'ADMIN') {
       throw AdminRoleRequiredException
     }
@@ -172,8 +167,8 @@ export class CopyrightReportService {
     const validTransitions: Record<ReportStatus, ReportStatus[]> = {
       [ReportStatus.Pending]: [ReportStatus.UnderReview, ReportStatus.Dismissed],
       [ReportStatus.UnderReview]: [ReportStatus.Resolved, ReportStatus.Dismissed],
-      [ReportStatus.Resolved]: [], // Cannot transition from resolved
-      [ReportStatus.Dismissed]: [], // Cannot transition from dismissed
+      [ReportStatus.Resolved]: [],
+      [ReportStatus.Dismissed]: [],
     }
 
     if (!validTransitions[currentStatus].includes(newStatus)) {
@@ -187,7 +182,7 @@ export class CopyrightReportService {
         where: { id: songId },
         data: {
           copyrightStatus: 'Violation',
-          isActive: false, // Deactivate song with copyright violation
+          isActive: false,
         },
       })
 
