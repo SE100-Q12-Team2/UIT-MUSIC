@@ -11,5 +11,18 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: uit_music_meilisearch
+    environment:
+      - MEILI_ENV=development
+      - MEILI_MASTER_KEY=ff92c84d6d716d041ae2c1915fc4158ebd2ad34e34b9698788dee341e33de789b0f4fb0183800d7a1a926f1919dc6759d269f9fa1c76424a6a7d22239a955e1ad6129629e4eba4a26631f924ba81d581
+
+    ports:
+      - 7700:7700
+    volumes:
+      - meili_data:/meili_data
+
 volumes:
   pgdata:
+  meili_data:

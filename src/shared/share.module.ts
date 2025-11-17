@@ -12,6 +12,7 @@ import { EmailService } from 'src/shared/services/email.service'
 import { HashingService } from 'src/shared/services/hashing.service'
 import { S3IngestService } from 'src/shared/services/s3.service'
 import { TokenService } from 'src/shared/services/token.service'
+import { MeilisearchService } from 'src/shared/services/meilisearch.service'
 
 const sharedServices = [
   PrismaService,
@@ -22,6 +23,7 @@ const sharedServices = [
   S3IngestService,
   SharedRoleRepository,
   SharedResetPasswordTokenRepo,
+  MeilisearchService,
 ]
 
 @Global()

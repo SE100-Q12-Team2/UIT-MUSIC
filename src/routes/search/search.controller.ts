@@ -1,6 +1,6 @@
 import { Controller, Get, Query, HttpCode, HttpStatus } from '@nestjs/common'
 import { ZodSerializerDto } from 'nestjs-zod'
-import { SearchService } from './search.service'
+import { SearchMeilisearchService } from './search-meilisearch.service'
 import { Auth } from 'src/shared/decorators/auth.decorator'
 import { AuthType } from 'src/shared/constants/auth.constant'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
@@ -14,7 +14,7 @@ import {
 
 @Controller('search')
 export class SearchController {
-  constructor(private readonly searchService: SearchService) {}
+  constructor(private readonly searchService: SearchMeilisearchService) {}
 
   @Get()
   @Auth([AuthType.Bearer, AuthType.None])

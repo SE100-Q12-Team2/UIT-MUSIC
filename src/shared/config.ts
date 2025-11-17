@@ -54,6 +54,8 @@ const ConfigSchema = z.object({
   CF_DOMAIN: z.string(),
   PAYMENT_API_KEY_SECRET: z.string(),
   REDIS_CLOUD_URL: z.string(),
+  MEILI_HOST: z.string().default('http://localhost:7700'),
+  MEILI_MASTER_KEY: z.string(),
 })
 
 const parsed = ConfigSchema.safeParse(process.env)
