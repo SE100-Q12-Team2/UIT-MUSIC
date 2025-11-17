@@ -7,6 +7,6 @@ import { EntityExistsValidator } from 'src/shared/validators/entity-exists.valid
 @Module({
   controllers: [SongController],
   providers: [SongService, SongRepository, EntityExistsValidator],
-  exports: [SongService],
+  exports: [SongService, SongRepository],
 })
 export class SongModule {}
