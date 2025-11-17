@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { SearchController } from 'src/routes/search/search.controller'
 import { SearchMeilisearchService } from 'src/routes/search/search-meilisearch.service'
 import { SearchIndexService } from 'src/routes/search/search-index.service'
+import { SearchSyncListener } from 'src/routes/search/search-sync.listener'
 import { SharedModule } from 'src/shared/share.module'
 
 @Module({
@@ -10,7 +11,7 @@ import { SharedModule } from 'src/shared/share.module'
   providers: [
     SearchMeilisearchService,
     SearchIndexService,
-    // Alias SearchMeilisearchService as SearchService for backwards compatibility
+    SearchSyncListener,
     {
       provide: 'SearchService',
       useExisting: SearchMeilisearchService,

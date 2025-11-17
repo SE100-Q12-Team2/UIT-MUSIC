@@ -1,12 +1,17 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { AlbumRepository } from './album.repo'
 import { Prisma } from '@prisma/client'
 import { GetAlbumsQueryType, CreateAlbumType, UpdateAlbumType } from './album.model'
 import { AlbumOrder } from 'src/shared/constants/album.constant'
+import { SEARCH_SYNC_EVENTS } from 'src/shared/events/search-sync.events'
 
 @Injectable()
 export class AlbumService {
-  constructor(private readonly albumRepo: AlbumRepository) {}
+  constructor(
+    private readonly albumRepo: AlbumRepository,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   async getAlbums(query: GetAlbumsQueryType) {
     const { page, limit, labelId, order, search } = query
@@ -76,6 +81,8 @@ export class AlbumService {
       },
     })
 
+    this.eventEmitter.emit(SEARCH_SYNC_EVENTS.ALBUM_CREATED, { albumId: Number(album.id) })
+
     return {
       id: Number(album.id),
       albumTitle: album.albumTitle,
@@ -100,6 +107,8 @@ export class AlbumService {
     }
 
     await this.albumRepo.updateAlbum(albumId, data)
+
+    this.eventEmitter.emit(SEARCH_SYNC_EVENTS.ALBUM_UPDATED, { albumId })
 
     return {
       id: albumId,
@@ -129,6 +138,8 @@ export class AlbumService {
     }
 
     await this.albumRepo.deleteAlbum(albumId)
+
+    this.eventEmitter.emit(SEARCH_SYNC_EVENTS.ALBUM_DELETED, { albumId })
 
     return {
       id: albumId,

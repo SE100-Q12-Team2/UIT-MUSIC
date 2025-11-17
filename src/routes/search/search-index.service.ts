@@ -229,4 +229,99 @@ export class SearchIndexService {
 
     await this.meili.indexSong(songDocument)
   }
+
+  async updateAlbumIndex(albumId: number) {
+    const album = await this.prisma.album.findUnique({
+      where: { id: albumId },
+      include: {
+        label: {
+          select: {
+            labelName: true,
+          },
+        },
+        _count: {
+          select: { songs: true },
+        },
+      },
+    })
+
+    if (!album) {
+      await this.meili.deleteAlbum(albumId)
+      return
+    }
+
+    const albumDocument: AlbumDocument = {
+      id: album.id,
+      albumTitle: album.albumTitle,
+      albumDescription: album.albumDescription,
+      coverImage: album.coverImage,
+      releaseDate: album.releaseDate?.getTime() || null,
+      labelName: album.label?.labelName || null,
+      totalTracks: album._count.songs,
+    }
+
+    await this.meili.indexAlbum(albumDocument)
+  }
+
+  async updateArtistIndex(artistId: number) {
+    const artist = await this.prisma.artist.findUnique({
+      where: { id: artistId },
+      include: {
+        _count: {
+          select: { songArtists: true },
+        },
+      },
+    })
+
+    if (!artist) {
+      await this.meili.deleteArtist(artistId)
+      return
+    }
+
+    const artistDocument: ArtistDocument = {
+      id: artist.id,
+      artistName: artist.artistName,
+      biography: artist.biography,
+      profileImage: artist.profileImage,
+      hasPublicProfile: artist.hasPublicProfile,
+      songCount: artist._count.songArtists,
+    }
+
+    await this.meili.indexArtist(artistDocument)
+  }
+
+  async updatePlaylistIndex(playlistId: number) {
+    const playlist = await this.prisma.playlist.findUnique({
+      where: { id: playlistId },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+          },
+        },
+        _count: {
+          select: { playlistSongs: true },
+        },
+      },
+    })
+
+    if (!playlist) {
+      await this.meili.deletePlaylist(playlistId)
+      return
+    }
+
+    const playlistDocument: PlaylistDocument = {
+      id: playlist.id,
+      playlistName: playlist.playlistName,
+      description: playlist.description,
+      coverImageUrl: playlist.coverImageUrl,
+      tags: playlist.tags,
+      isPublic: playlist.isPublic,
+      userName: playlist.user.fullName,
+      trackCount: playlist._count.playlistSongs,
+      updatedAt: playlist.updatedAt.getTime(),
+    }
+
+    await this.meili.indexPlaylist(playlistDocument)
+  }
 }

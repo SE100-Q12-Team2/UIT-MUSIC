@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common'
+import { EventEmitter2 } from '@nestjs/event-emitter'
 import { SongRepository } from './song.repo'
 import { Prisma } from '@prisma/client'
 import {
@@ -10,12 +11,14 @@ import {
 } from './song.model'
 import { SongOrder } from 'src/shared/constants/song.constant'
 import { EntityExistsValidator, EntityType } from 'src/shared/validators/entity-exists.validator'
+import { SEARCH_SYNC_EVENTS } from 'src/shared/events/search-sync.events'
 
 @Injectable()
 export class SongService {
   constructor(
     private readonly songRepo: SongRepository,
     private readonly entityValidator: EntityExistsValidator,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async getSongs(query: GetSongsQueryType, userId?: number) {
@@ -112,6 +115,8 @@ export class SongService {
 
     await this.songRepo.createSongArtistsFromAssignments(song.id, artists)
 
+    this.eventEmitter.emit(SEARCH_SYNC_EVENTS.SONG_CREATED, { songId: Number(song.id) })
+
     return {
       id: Number(song.id),
       title: song.title,
@@ -139,6 +144,8 @@ export class SongService {
     await this.entityValidator.validateOptionalId(data.genreId, EntityType.GENRE)
 
     await this.songRepo.updateSong(songId, data)
+
+    this.eventEmitter.emit(SEARCH_SYNC_EVENTS.SONG_UPDATED, { songId })
 
     return {
       id: songId,
