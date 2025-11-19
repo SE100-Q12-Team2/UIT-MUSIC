@@ -4,11 +4,11 @@ export const UserSubscriptionSchema = z.object({
   id: z.number(),
   userId: z.number(),
   planId: z.number(),
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.string(),
+  endDate: z.string(),
   isActive: z.boolean(),
   autoRenew: z.boolean(),
-  createdAt: z.date(),
+  createdAt: z.string(),
 })
 
 export const CreateUserSubscriptionSchema = z
@@ -61,12 +61,12 @@ export const PaginatedUserSubscriptionsResponseSchema = z.object({
 
 export const CancelSubscriptionResponseSchema = z.object({
   message: z.string(),
-  endDate: z.date(),
+  endDate: z.string(),
 })
 
 export const RenewSubscriptionResponseSchema = z.object({
   message: z.string(),
-  newEndDate: z.date(),
+  newEndDate: z.string(),
 })
 
 export const SubscriptionStatusResponseSchema = z.object({
@@ -75,7 +75,7 @@ export const SubscriptionStatusResponseSchema = z.object({
     .object({
       id: z.number(),
       planName: z.string(),
-      endDate: z.date(),
+      endDate: z.string(),
       autoRenew: z.boolean(),
     })
     .nullable(),

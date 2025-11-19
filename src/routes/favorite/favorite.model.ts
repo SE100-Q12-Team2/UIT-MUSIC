@@ -3,7 +3,7 @@ import z from 'zod'
 export const FavoriteSchema = z.object({
   userId: z.number().int().positive(),
   songId: z.number().int().positive(),
-  likedAt: z.date(),
+  likedAt: z.string(),
 })
 
 export const FavoriteSongInfoSchema = z.object({
@@ -14,7 +14,7 @@ export const FavoriteSongInfoSchema = z.object({
   language: z.string().nullable(),
   albumId: z.number().int().nullable(),
   genreId: z.number().int().nullable(),
-  uploadDate: z.date(),
+  uploadDate: z.string(),
   playCount: z.bigint(),
   isActive: z.boolean(),
 })
@@ -55,7 +55,7 @@ export const CheckFavoriteQuerySchema = z.object({
 
 export const CheckFavoriteResSchema = z.object({
   isFavorite: z.boolean(),
-  likedAt: z.date().nullable(),
+  likedAt: z.string().nullable(),
 })
 
 export type FavoriteType = z.infer<typeof FavoriteSchema>

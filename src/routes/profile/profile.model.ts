@@ -3,19 +3,19 @@ import { z } from 'zod'
 
 export const UpdateProfileBodySchema = UserSchema.pick({
   email: true,
-  username: true,
-  avatar: true,
+  fullName: true,
   gender: true,
-  dob: true,
-  phoneNumber: true,
-}).partial({
-  email: true,
-  username: true,
-  avatar: true,
-  gender: true,
-  dob: true,
-  phoneNumber: true,
+  profileImage: true,
 })
+  .extend({
+    dateOfBirth: z.string().optional(),
+  })
+  .partial({
+    email: true,
+    fullName: true,
+    gender: true,
+    profileImage: true,
+  })
 
 export const UpdateProfileResSchema = UserSchema.omit({
   totpSecret: true,

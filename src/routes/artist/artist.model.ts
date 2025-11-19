@@ -22,10 +22,10 @@ export const GetArtistQuerySchema = z
         if (val === 'false') return false
         return undefined
       }),
-    createdFrom: z.coerce.date().optional(),
-    createdTo: z.coerce.date().optional(),
-    updatedFrom: z.coerce.date().optional(),
-    updatedTo: z.coerce.date().optional(),
+    createdFrom: z.string().optional(),
+    createdTo: z.string().optional(),
+    updatedFrom: z.string().optional(),
+    updatedTo: z.string().optional(),
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(20),
     sort: z.enum(['createdAt', 'updatedAt', 'artistName']).default('updatedAt'),

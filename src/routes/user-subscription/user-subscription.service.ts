@@ -93,7 +93,7 @@ export class UserSubscriptionService {
       const result = await this.userSubscriptionRepo.cancelSubscription(id, userId)
       return {
         message: 'Subscription cancelled successfully. Access will remain until the end date.',
-        endDate: result.endDate,
+        endDate: result.endDate.toISOString(),
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {
@@ -114,7 +114,7 @@ export class UserSubscriptionService {
     }
 
     const now = new Date()
-    if (subscription.endDate < now) {
+    if (new Date(subscription.endDate) < now) {
       throw SubscriptionExpiredError
     }
 
@@ -125,7 +125,7 @@ export class UserSubscriptionService {
       const result = await this.userSubscriptionRepo.renewSubscription(id, userId, newEndDate)
       return {
         message: 'Subscription renewed successfully',
-        newEndDate: result.newEndDate,
+        newEndDate: result.newEndDate.toISOString(),
       }
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

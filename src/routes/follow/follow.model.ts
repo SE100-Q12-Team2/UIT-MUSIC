@@ -7,7 +7,7 @@ export const FollowSchema = z.object({
   userId: z.number().int().positive(),
   targetType: FollowTypeEnum,
   targetId: z.number().int().positive(),
-  followedAt: z.date(),
+  followedAt: z.string(),
 })
 
 export const FollowArtistInfoSchema = z.object({
@@ -40,7 +40,7 @@ export const FollowWithTargetSchema = z.object({
   userId: z.number().int().positive(),
   targetType: FollowTypeEnum,
   targetId: z.number().int().positive(),
-  followedAt: z.date(),
+  followedAt: z.string(),
   target: z.union([FollowArtistInfoSchema, FollowLabelInfoSchema]).nullable(),
 })
 
@@ -68,7 +68,7 @@ export const CheckFollowQuerySchema = z.object({
 
 export const CheckFollowResSchema = z.object({
   isFollowing: z.boolean(),
-  followedAt: z.date().nullable(),
+  followedAt: z.string().nullable(),
 })
 
 export const GetFollowersCountResSchema = z.object({

@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { ZodValidationPipe } from 'nestjs-zod'
+import { cleanupOpenApiDoc, ZodValidationPipe } from 'nestjs-zod'
 import { NestExpressApplication } from '@nestjs/platform-express'
-
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
 BigInt.prototype.toJSON = function () {
   const num = Number(this)
@@ -17,6 +17,12 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   })
+
+  const openApiDoc = SwaggerModule.createDocument(
+    app,
+    new DocumentBuilder().setTitle('UIT-Music API').setDescription('Example API description').setVersion('1.0').build(),
+  )
+  SwaggerModule.setup('api', app, cleanupOpenApiDoc(openApiDoc))
 
   app.useGlobalPipes(new ZodValidationPipe())
 

@@ -12,7 +12,7 @@ export const TransactionSchema = z.object({
   transactionStatus: TransactionStatusEnum,
   transactionReference: z.string().nullable(),
   invoiceData: z.any().nullable(),
-  createdAt: z.date(),
+  createdAt: z.string(),
 })
 
 export const CreateTransactionSchema = z.object({

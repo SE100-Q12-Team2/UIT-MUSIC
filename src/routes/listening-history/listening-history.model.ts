@@ -5,7 +5,7 @@ export const ListeningHistorySchema = z.object({
   id: z.number(),
   userId: z.number(),
   songId: z.number(),
-  playedAt: z.date(),
+  playedAt: z.string(),
   durationListened: z.number().nullable(),
   audioQuality: AudioQualityEnum.nullable(),
   deviceInfo: z.string().max(255).nullable(),
@@ -63,7 +63,7 @@ export const CreateListeningHistorySchema = z
 
 export const TrackSongResponseSchema = z.object({
   id: z.number(),
-  playedAt: z.date(),
+  playedAt: z.string(),
 })
 
 export const ClearHistoryResponseSchema = z.object({
@@ -74,8 +74,8 @@ export const GetListeningHistoryQuerySchema = z
   .object({
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(100).default(20),
-    startDate: z.coerce.date().optional(),
-    endDate: z.coerce.date().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
     songId: z.coerce.number().int().positive().optional(),
   })
   .strict()
@@ -83,8 +83,8 @@ export const GetListeningHistoryQuerySchema = z
 export const GetUserStatsQuerySchema = z
   .object({
     period: z.enum(['daily', 'weekly', 'monthly', 'yearly']).default('monthly'),
-    startDate: z.coerce.date().optional(),
-    endDate: z.coerce.date().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
   })
   .strict()
 

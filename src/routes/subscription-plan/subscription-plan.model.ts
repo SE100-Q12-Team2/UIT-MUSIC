@@ -7,7 +7,7 @@ export const SubscriptionPlanSchema = z.object({
   price: z.number(),
   features: z.any().nullable(),
   isActive: z.boolean(),
-  createdAt: z.date(),
+  createdAt: z.string(),
 })
 
 export const CreateSubscriptionPlanSchema = z

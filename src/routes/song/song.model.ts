@@ -73,7 +73,7 @@ export const SongSchema = z.object({
   albumId: z.number().nullable(),
   genreId: z.number().nullable(),
   labelId: z.number(),
-  uploadDate: z.date(),
+  uploadDate: z.string(),
   isActive: z.boolean(),
   copyrightStatus: z.enum(['Clear', 'Disputed', 'Violation']),
   playCount: z.number(),

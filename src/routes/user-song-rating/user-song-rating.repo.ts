@@ -365,7 +365,7 @@ export class UserSongRatingRepository {
         songId: r.songId,
         songTitle: r.song.title,
         rating: r.rating,
-        ratedAt: r.ratedAt,
+        ratedAt: r.ratedAt.toISOString(),
       })),
     }
   }

@@ -12,8 +12,8 @@ export const CopyrightReportSchema = z.object({
   reportReason: z.string(),
   status: ReportStatusEnum,
   adminNotes: z.string().nullable(),
-  createdAt: z.date(),
-  resolvedAt: z.date().nullable(),
+  createdAt: z.string(),
+  resolvedAt: z.string().nullable(),
 })
 
 export const CreateCopyrightReportSchema = z.object({

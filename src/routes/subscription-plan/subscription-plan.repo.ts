@@ -26,9 +26,13 @@ export class SubscriptionPlanRepository {
     })
 
     return {
-      ...plan,
+      id: plan.id,
+      planName: plan.planName,
+      durationMonths: plan.durationMonths,
       price: Number(plan.price),
       features: plan.features as any,
+      isActive: plan.isActive,
+      createdAt: plan.createdAt.toISOString(),
     }
   }
 
@@ -66,6 +70,7 @@ export class SubscriptionPlanRepository {
       ...plan,
       price: Number(plan.price),
       features: plan.features as any,
+      createdAt: plan.createdAt.toISOString(),
     }))
 
     return {
@@ -88,6 +93,7 @@ export class SubscriptionPlanRepository {
       ...plan,
       price: Number(plan.price),
       features: plan.features as any,
+      createdAt: plan.createdAt.toISOString(),
     }
   }
 
@@ -111,6 +117,7 @@ export class SubscriptionPlanRepository {
       ...plan,
       price: Number(plan.price),
       features: plan.features as any,
+      createdAt: plan.createdAt.toISOString(),
     }
   }
 

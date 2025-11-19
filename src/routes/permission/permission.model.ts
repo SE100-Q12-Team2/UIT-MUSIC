@@ -18,17 +18,16 @@ export const PermissionSchema = z.object({
   createdById: z.number().nullable(),
   updatedById: z.number().nullable(),
   deletedById: z.number().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  deletedAt: z.date().nullable()
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  deletedAt: z.string().nullable(),
 })
-
 
 export const CreatePermissionBodySchema = PermissionSchema.pick({
   name: true,
   method: true,
   path: true,
-  module: true
+  module: true,
 }).strict()
 
 export const UpdatePermissionBodySchema = CreatePermissionBodySchema
@@ -39,10 +38,12 @@ export const GetPermissionParamsSchema = z
   })
   .strict()
 
-export const GetPermissionQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().default(10),
-}).strict()
+export const GetPermissionQuerySchema = z
+  .object({
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().default(10),
+  })
+  .strict()
 
 export const GetPermissionResSchema = z.object({
   data: z.array(PermissionSchema),
@@ -60,7 +61,6 @@ export type GetPermissionQueryType = z.infer<typeof GetPermissionQuerySchema>
 
 export type GetPermissionResType = z.infer<typeof GetPermissionResSchema>
 
-export type CreatePermissionBodyType =  z.infer<typeof CreatePermissionBodySchema>
+export type CreatePermissionBodyType = z.infer<typeof CreatePermissionBodySchema>
 
-export type UpdatePermissionBodyType =  z.infer<typeof UpdatePermissionBodySchema>
-
+export type UpdatePermissionBodyType = z.infer<typeof UpdatePermissionBodySchema>

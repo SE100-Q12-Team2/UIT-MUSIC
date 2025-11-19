@@ -43,10 +43,10 @@ export class ListeningHistoryRepository {
     if (query.startDate || query.endDate) {
       where.playedAt = {}
       if (query.startDate) {
-        where.playedAt.gte = query.startDate
+        where.playedAt.gte = new Date(query.startDate)
       }
       if (query.endDate) {
-        where.playedAt.lte = query.endDate
+        where.playedAt.lte = new Date(query.endDate)
       }
     }
 
@@ -93,7 +93,7 @@ export class ListeningHistoryRepository {
       id: item.id,
       userId: item.userId,
       songId: item.songId,
-      playedAt: item.playedAt,
+      playedAt: item.playedAt.toISOString(),
       durationListened: item.durationListened,
       audioQuality: item.audioQuality,
       deviceInfo: item.deviceInfo,
@@ -184,10 +184,10 @@ export class ListeningHistoryRepository {
     if (query.startDate || query.endDate) {
       where.playedAt = {}
       if (query.startDate) {
-        where.playedAt.gte = query.startDate
+        where.playedAt.gte = new Date(query.startDate)
       }
       if (query.endDate) {
-        where.playedAt.lte = query.endDate
+        where.playedAt.lte = new Date(query.endDate)
       }
     }
 

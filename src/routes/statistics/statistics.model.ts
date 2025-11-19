@@ -29,7 +29,7 @@ export const GetUserEngagementQuerySchema = z.object({
 })
 
 export const DailyStatisticSchema = z.object({
-  statDate: z.date(),
+  statDate: z.string(),
   totalPlays: z.number().nonnegative(),
   uniqueListeners: z.number().int().nonnegative(),
   premiumUsersCount: z.number().int().nonnegative(),
@@ -37,7 +37,7 @@ export const DailyStatisticSchema = z.object({
   adImpressions: z.number().nonnegative(),
   revenueSubscription: z.number().nonnegative(),
   revenueAds: z.number().nonnegative(),
-  createdAt: z.date(),
+  createdAt: z.string(),
 })
 
 export const DailyStatsListResponseSchema = z.object({
@@ -54,8 +54,8 @@ export const TrendingSongSchema = z.object({
   id: z.number().int().positive(),
   songId: z.number().int().positive(),
   periodType: PeriodTypeEnum,
-  periodStart: z.date(),
-  periodEnd: z.date(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
   playCount: z.number().nonnegative(),
   rankPosition: z.number().int().positive(),
   song: z.object({
@@ -77,8 +77,8 @@ export const TrendingSongSchema = z.object({
 
 export const TrendingSongsResponseSchema = z.object({
   periodType: PeriodTypeEnum,
-  periodStart: z.date(),
-  periodEnd: z.date(),
+  periodStart: z.string(),
+  periodEnd: z.string(),
   songs: z.array(TrendingSongSchema),
 })
 

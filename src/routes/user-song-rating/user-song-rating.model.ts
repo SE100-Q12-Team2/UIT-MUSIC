@@ -7,7 +7,7 @@ export const UserSongRatingSchema = z.object({
   userId: z.number().int().positive(),
   songId: z.number().int().positive(),
   rating: RatingEnum,
-  ratedAt: z.date(),
+  ratedAt: z.string(),
 })
 
 export const CreateRatingSchema = z.object({
@@ -83,7 +83,7 @@ export const UserRatingStatsSchema = z.object({
       songId: z.number().int().positive(),
       songTitle: z.string(),
       rating: RatingEnum,
-      ratedAt: z.date(),
+      ratedAt: z.string(),
     }),
   ),
 })

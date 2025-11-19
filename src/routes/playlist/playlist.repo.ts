@@ -45,7 +45,11 @@ export class PlaylistRepository {
     ])
 
     return {
-      data,
+      data: data.map((playlist) => ({
+        ...playlist,
+        createdAt: playlist.createdAt.toISOString(),
+        updatedAt: playlist.updatedAt.toISOString(),
+      })),
       page: query.page,
       totalPages: Math.ceil(totalItems / limit),
       totalItems,
@@ -60,9 +64,14 @@ export class PlaylistRepository {
   }
 
   async create(body): Promise<CreatePlaylistResType> {
-    return await this.prisma.playlist.create({
+    const playlist = await this.prisma.playlist.create({
       data: body,
     })
+    return {
+      ...playlist,
+      createdAt: playlist.createdAt.toISOString(),
+      updatedAt: playlist.updatedAt.toISOString(),
+    }
   }
 
   async update(id: number, body: Partial<UpdatePlaylistBodyType>) {

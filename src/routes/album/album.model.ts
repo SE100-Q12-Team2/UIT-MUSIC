@@ -15,7 +15,7 @@ export const CreateAlbumSchema = z.object({
   albumTitle: z.string().min(1).max(255),
   albumDescription: z.string().optional(),
   coverImage: z.string().max(500).optional(),
-  releaseDate: z.coerce.date().optional(),
+  releaseDate: z.string().optional(),
   totalTracks: z.number().int().min(0).default(0),
 })
 
@@ -23,7 +23,7 @@ export const UpdateAlbumSchema = z.object({
   albumTitle: z.string().min(1).max(255).optional(),
   albumDescription: z.string().nullable().optional(),
   coverImage: z.string().max(500).nullable().optional(),
-  releaseDate: z.coerce.date().nullable().optional(),
+  releaseDate: z.string().nullable().optional(),
   totalTracks: z.number().int().min(0).optional(),
 })
 
@@ -32,7 +32,7 @@ export const AlbumSongSchema = z.object({
   title: z.string(),
   duration: z.number(),
   playCount: z.number(),
-  uploadDate: z.date(),
+  uploadDate: z.string(),
   songArtists: z
     .array(
       z.object({
@@ -52,11 +52,11 @@ export const AlbumSchema = z.object({
   albumTitle: z.string(),
   albumDescription: z.string().nullable(),
   coverImage: z.string().nullable(),
-  releaseDate: z.date().nullable(),
+  releaseDate: z.string().nullable(),
   labelId: z.number().nullable(),
   totalTracks: z.number(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
   label: z
     .object({
       id: z.number(),

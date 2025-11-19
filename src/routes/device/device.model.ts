@@ -5,8 +5,8 @@ export const DeviceSchema = z.object({
   userId: z.number().int().positive(),
   userAgent: z.string(),
   ip: z.string(),
-  lastActive: z.date(),
-  createdAt: z.date(),
+  lastActive: z.string(),
+  createdAt: z.string(),
   isActive: z.boolean(),
 })
 
@@ -47,8 +47,8 @@ export const DeviceResponseSchema = z.object({
   }),
   ip: z.string(),
   location: z.string().optional(),
-  lastActive: z.date(),
-  createdAt: z.date(),
+  lastActive: z.string(),
+  createdAt: z.string(),
   isActive: z.boolean(),
   isCurrent: z.boolean(),
   refreshTokenCount: z.number(),

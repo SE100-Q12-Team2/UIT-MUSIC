@@ -48,7 +48,10 @@ export class RecordLabelRepository {
     ])
 
     return {
-      items,
+      items: items.map((item) => ({
+        ...item,
+        createdAt: item.createdAt.toISOString(),
+      })),
       total: Number(total),
       page,
       limit,
@@ -80,7 +83,10 @@ export class RecordLabelRepository {
       throw new NotFoundException(`Record label with ID ${id} not found`)
     }
 
-    return label
+    return {
+      ...label,
+      createdAt: label.createdAt.toISOString(),
+    }
   }
 
   async findByUserId(userId: number) {
@@ -116,7 +122,10 @@ export class RecordLabelRepository {
       throw new NotFoundException(`Record label for user ID ${userId} not found`)
     }
 
-    return label
+    return {
+      ...label,
+      createdAt: label.createdAt.toISOString(),
+    }
   }
 
   async create(userId: number, data: CreateRecordLabelType) {
@@ -136,7 +145,7 @@ export class RecordLabelRepository {
       throw new NotFoundException('User not found')
     }
 
-    return this.prisma.recordLabel.create({
+    const label = await this.prisma.recordLabel.create({
       data: {
         ...data,
         user: {
@@ -159,6 +168,11 @@ export class RecordLabelRepository {
         },
       },
     })
+
+    return {
+      ...label,
+      createdAt: label.createdAt.toISOString(),
+    }
   }
 
   async update(id: number, userId: number, data: UpdateRecordLabelType) {
@@ -168,7 +182,7 @@ export class RecordLabelRepository {
       throw new ForbiddenException('You do not have permission to update this record label')
     }
 
-    return this.prisma.recordLabel.update({
+    const updatedLabel = await this.prisma.recordLabel.update({
       where: { id },
       data,
       include: {
@@ -187,6 +201,11 @@ export class RecordLabelRepository {
         },
       },
     })
+
+    return {
+      ...updatedLabel,
+      createdAt: updatedLabel.createdAt.toISOString(),
+    }
   }
 
   async delete(id: number, userId: number) {
@@ -207,6 +226,6 @@ export class RecordLabelRepository {
     return {
       id,
       message: 'Record label deleted successfully',
-    } 
+    }
   }
 }

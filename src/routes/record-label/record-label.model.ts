@@ -40,7 +40,7 @@ export const RecordLabelSchema = z.object({
   website: z.string().nullable(),
   contactEmail: z.string().nullable(),
   hasPublicProfile: z.boolean(),
-  createdAt: z.date(),
+  createdAt: z.string(),
   user: z
     .object({
       id: z.number(),

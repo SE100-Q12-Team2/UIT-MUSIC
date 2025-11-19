@@ -41,7 +41,7 @@ export class RoleRepository {
   }
 
   async findRole(id: number): Promise<RoleWithPermissionType | null> {
-    return await this.prismaService.role.findUnique({
+    const role = await this.prismaService.role.findUnique({
       where: {
         id,
         deletedAt: null,
@@ -54,6 +54,16 @@ export class RoleRepository {
         },
       },
     })
+    if (!role) return null
+    return {
+      ...role,
+      permissions: role.permissions.map((p) => ({
+        ...p,
+        createdAt: p.createdAt.toISOString(),
+        updatedAt: p.updatedAt.toISOString(),
+        deletedAt: p.deletedAt ? p.deletedAt.toISOString() : null,
+      })),
+    }
   }
 
   async createRole({ data, userId }: { data: CreateRoleBodyType; userId: number }): Promise<RoleType> {

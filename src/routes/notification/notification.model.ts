@@ -8,7 +8,7 @@ export const NotificationSchema = z.object({
   title: z.string(),
   message: z.string(),
   isRead: z.boolean(),
-  createdAt: z.date(),
+  createdAt: z.string(),
 })
 
 export const CreateNotificationSchema = z.object({

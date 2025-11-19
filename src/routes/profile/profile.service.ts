@@ -23,11 +23,17 @@ export class ProfileService {
 
   async updateProfile({ userId, body }: { userId: number; body: UpdateProfileBodyType }) {
     try {
+      const { dateOfBirth, ...restBody } = body
+      const updateData = {
+        ...restBody,
+        ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
+      }
+
       return await this.shareUserRepo.updateProfile({
         where: {
           id: userId,
         },
-        data: body,
+        data: updateData,
       })
     } catch (error) {
       if (isNotFoundPrismaError(error)) {

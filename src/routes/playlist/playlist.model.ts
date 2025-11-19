@@ -3,16 +3,19 @@ import z from 'zod'
 export const PlaylistSchema = z.object({
   id: z.number().int().positive(),
   userId: z.number().int().positive(),
-  playlistName: z.string().min(1, {
-    message: "Playlist name must be at least 1 character long"
-  }).max(255),
+  playlistName: z
+    .string()
+    .min(1, {
+      message: 'Playlist name must be at least 1 character long',
+    })
+    .max(255),
   description: z.string().nullable(),
   tags: z.string().array().default([]),
   coverImageUrl: z.string().nullable(),
   isFavorite: z.boolean().default(false),
   isPublic: z.boolean().default(false),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 export const PlaylistSongSchema = z.object({
@@ -20,13 +23,13 @@ export const PlaylistSongSchema = z.object({
   playlistId: z.number().int().positive(),
   songId: z.number().int().positive(),
   position: z.number().int(),
-  addedAt: z.date(),
+  addedAt: z.string(),
 })
 
 export const FavoriteSchema = z.object({
   userId: z.number().int().positive(),
   trackId: z.number().int().positive(),
-  likedAt: z.date(),
+  likedAt: z.string(),
 })
 
 export const GetPlaylistQuerySchema = z.object({

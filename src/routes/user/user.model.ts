@@ -57,7 +57,7 @@ export const CreateUserBodySchema = UserSchema.pick({
 })
   .extend({
     roleId: z.number().int().positive().default(6),
-    dateOfBirth: z.coerce.date().optional(),
+    dateOfBirth: z.string().optional(),
     gender: GenderEnum.optional(),
   })
   .strict()
@@ -65,7 +65,7 @@ export const CreateUserBodySchema = UserSchema.pick({
 export const UpdateUserSchema = z
   .object({
     fullName: z.string().min(1).max(255).optional(),
-    dateOfBirth: z.coerce.date().optional(),
+    dateOfBirth: z.string().optional(),
     gender: GenderEnum.optional(),
   })
   .strict()

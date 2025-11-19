@@ -50,7 +50,12 @@ export class AlbumService {
     ])
 
     return {
-      items: albums,
+      items: albums.map((album) => ({
+        ...album,
+        releaseDate: album.releaseDate ? album.releaseDate.toISOString() : null,
+        createdAt: album.createdAt.toISOString(),
+        updatedAt: album.updatedAt.toISOString(),
+      })),
       total: Number(total),
       page,
       limit,
@@ -167,11 +172,11 @@ export class AlbumService {
       albumTitle: album.albumTitle,
       albumDescription: album.albumDescription,
       coverImage: album.coverImage,
-      releaseDate: album.releaseDate,
+      releaseDate: album.releaseDate ? album.releaseDate.toISOString() : null,
       labelId: album.labelId ? Number(album.labelId) : null,
       totalTracks: album.totalTracks,
-      createdAt: album.createdAt,
-      updatedAt: album.updatedAt,
+      createdAt: album.createdAt.toISOString(),
+      updatedAt: album.updatedAt.toISOString(),
       label: album.label
         ? {
             id: Number(album.label.id),
@@ -192,7 +197,7 @@ export class AlbumService {
         title: song.title,
         duration: song.duration,
         playCount: Number(song.playCount),
-        uploadDate: song.uploadDate,
+        uploadDate: song.uploadDate ? song.uploadDate.toISOString() : null,
         songArtists: song.songArtists?.map((sa: any) => ({
           role: sa.role,
           artist: {

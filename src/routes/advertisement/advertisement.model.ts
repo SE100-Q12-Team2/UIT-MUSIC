@@ -23,10 +23,10 @@ export const AdvertisementSchema = z.object({
   filePath: z.string().nullable(),
   duration: z.number().int().positive().nullable(),
   targetAudience: TargetAudienceSchema.nullable(),
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.string(),
+  endDate: z.string(),
   isActive: z.boolean(),
-  createdAt: z.date(),
+  createdAt: z.string(),
 })
 
 export const CreateAdvertisementSchema = z.object({
@@ -35,8 +35,8 @@ export const CreateAdvertisementSchema = z.object({
   filePath: z.string().max(500).optional(),
   duration: z.number().int().positive().optional(),
   targetAudience: TargetAudienceSchema.optional(),
-  startDate: z.string().datetime().or(z.date()),
-  endDate: z.string().datetime().or(z.date()),
+  startDate: z.string(),
+  endDate: z.string(),
   isActive: z.boolean().optional().default(true),
 })
 
@@ -46,8 +46,8 @@ export const UpdateAdvertisementSchema = z.object({
   filePath: z.string().max(500).optional(),
   duration: z.number().int().positive().optional(),
   targetAudience: TargetAudienceSchema.optional(),
-  startDate: z.string().datetime().or(z.date()).optional(),
-  endDate: z.string().datetime().or(z.date()).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   isActive: z.boolean().optional(),
 })
 
@@ -74,7 +74,7 @@ export const AdImpressionSchema = z.object({
   id: z.number().int().positive(),
   adId: z.number().int().positive(),
   userId: z.number().int().positive().nullable(),
-  displayedAt: z.date(),
+  displayedAt: z.string(),
   clicked: z.boolean(),
 })
 

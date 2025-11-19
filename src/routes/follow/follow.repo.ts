@@ -104,7 +104,7 @@ export class FollowRepository {
 
     return {
       isFollowing: !!follow,
-      followedAt: follow?.followedAt ?? null,
+      followedAt: follow?.followedAt ? follow.followedAt.toISOString() : null,
     }
   }
 

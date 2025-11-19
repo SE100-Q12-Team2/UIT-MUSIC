@@ -26,6 +26,7 @@ export const UserSchema = z.object({
   dateOfBirth: z.date().nullable(),
   gender: GenderEnum.nullable(),
   roleId: z.number().positive(),
+  profileImage: z.string().nullable(),
   accountStatus: AccountStatusEnum.default('Active'),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),

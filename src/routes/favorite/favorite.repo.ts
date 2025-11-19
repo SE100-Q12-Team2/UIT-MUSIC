@@ -106,7 +106,7 @@ export class FavoriteRepository {
 
     return {
       isFavorite: !!favorite,
-      likedAt: favorite?.likedAt ?? null,
+      likedAt: favorite?.likedAt ? favorite.likedAt.toISOString() : null,
     }
   }
 

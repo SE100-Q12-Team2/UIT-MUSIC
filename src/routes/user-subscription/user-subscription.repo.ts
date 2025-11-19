@@ -42,9 +42,18 @@ export class UserSubscriptionRepository {
     })
 
     return {
-      ...subscription,
+      id: subscription.id,
+      userId: subscription.userId,
+      planId: subscription.planId,
+      startDate: subscription.startDate.toISOString(),
+      endDate: subscription.endDate.toISOString(),
+      isActive: subscription.isActive,
+      autoRenew: subscription.autoRenew,
+      createdAt: subscription.createdAt.toISOString(),
       plan: {
-        ...subscription.plan,
+        id: subscription.plan.id,
+        planName: subscription.plan.planName,
+        durationMonths: subscription.plan.durationMonths,
         price: Number(subscription.plan.price),
         features: subscription.plan.features as any,
       },
@@ -94,6 +103,9 @@ export class UserSubscriptionRepository {
 
     const data = subscriptions.map((sub) => ({
       ...sub,
+      startDate: sub.startDate.toISOString(),
+      endDate: sub.endDate.toISOString(),
+      createdAt: sub.createdAt.toISOString(),
       plan: {
         ...sub.plan,
         price: Number(sub.plan.price),
@@ -133,6 +145,9 @@ export class UserSubscriptionRepository {
 
     return {
       ...subscription,
+      startDate: subscription.startDate.toISOString(),
+      endDate: subscription.endDate.toISOString(),
+      createdAt: subscription.createdAt.toISOString(),
       plan: {
         ...subscription.plan,
         price: Number(subscription.plan.price),
@@ -167,6 +182,9 @@ export class UserSubscriptionRepository {
 
     return {
       ...subscription,
+      startDate: subscription.startDate.toISOString(),
+      endDate: subscription.endDate.toISOString(),
+      createdAt: subscription.createdAt.toISOString(),
       plan: {
         ...subscription.plan,
         price: Number(subscription.plan.price),
@@ -207,6 +225,9 @@ export class UserSubscriptionRepository {
 
     return {
       ...subscription,
+      startDate: subscription.startDate.toISOString(),
+      endDate: subscription.endDate.toISOString(),
+      createdAt: subscription.createdAt.toISOString(),
       plan: {
         ...subscription.plan,
         price: Number(subscription.plan.price),

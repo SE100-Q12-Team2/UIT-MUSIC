@@ -9,7 +9,7 @@ export const UserPreferenceSchema = z.object({
   explicitContent: z.boolean().default(false),
   autoPlay: z.boolean().default(true),
   highQualityStreaming: z.boolean().default(false),
-  updatedAt: z.date(),
+  updatedAt: z.string(),
 })
 
 export const CreateUserPreferenceSchema = z
@@ -39,7 +39,7 @@ export const UserPreferenceResponseSchema = z.object({
   explicitContent: z.boolean(),
   autoPlay: z.boolean(),
   highQualityStreaming: z.boolean(),
-  updatedAt: z.date(),
+  updatedAt: z.string(),
 })
 
 export type LanguageType = z.infer<typeof LanguageEnum>

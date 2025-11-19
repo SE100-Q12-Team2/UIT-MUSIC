@@ -103,7 +103,10 @@ export class PlaylistTracksRepository {
     ])
 
     return {
-      data,
+      data: data.map((item) => ({
+        ...item,
+        addedAt: item.addedAt.toISOString(),
+      })),
       page: q.page,
       totalPages: Math.ceil(total / q.limit),
       totalItems: total,

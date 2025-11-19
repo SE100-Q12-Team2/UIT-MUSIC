@@ -22,7 +22,7 @@ export class SharedUserRepository {
   }
 
   async findUniqueIncRolePermissions(where: WhereUserType): Promise<GetUserIncRolePermissionsType | null> {
-    return await this.prismaService.user.findFirst({
+    const user = await this.prismaService.user.findFirst({
       where: {
         ...where,
         deletedAt: null,
@@ -39,6 +39,19 @@ export class SharedUserRepository {
         },
       },
     })
+    if (!user) return null
+    return {
+      ...user,
+      role: {
+        ...user.role,
+        permissions: user.role.permissions.map((p) => ({
+          ...p,
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.updatedAt.toISOString(),
+          deletedAt: p.deletedAt ? p.deletedAt.toISOString() : null,
+        })),
+      },
+    }
   }
 
   async updateProfile({

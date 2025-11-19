@@ -33,7 +33,12 @@ export class PermissionRepository {
     ])
 
     return {
-      data,
+      data: data.map((permission) => ({
+        ...permission,
+        createdAt: permission.createdAt.toISOString(),
+        updatedAt: permission.updatedAt.toISOString(),
+        deletedAt: permission.deletedAt ? permission.deletedAt.toISOString() : null,
+      })),
       totalItems,
       page,
       limit,
@@ -42,12 +47,19 @@ export class PermissionRepository {
   }
 
   async findOnePermission({ id }: GetPermissionParamType): Promise<PermissionType | null> {
-    return await this.prismaService.permission.findUnique({
+    const permission = await this.prismaService.permission.findUnique({
       where: {
         id,
         deletedAt: null,
       },
     })
+    if (!permission) return null
+    return {
+      ...permission,
+      createdAt: permission.createdAt.toISOString(),
+      updatedAt: permission.updatedAt.toISOString(),
+      deletedAt: permission.deletedAt ? permission.deletedAt.toISOString() : null,
+    }
   }
 
   async createPermission({
@@ -57,12 +69,18 @@ export class PermissionRepository {
     data: CreatePermissionBodyType
     userId: number
   }): Promise<PermissionType> {
-    return await this.prismaService.permission.create({
+    const permission = await this.prismaService.permission.create({
       data: {
         ...data,
         createdById: userId,
       },
     })
+    return {
+      ...permission,
+      createdAt: permission.createdAt.toISOString(),
+      updatedAt: permission.updatedAt.toISOString(),
+      deletedAt: permission.deletedAt ? permission.deletedAt.toISOString() : null,
+    }
   }
 
   async updatePermission({
@@ -74,7 +92,7 @@ export class PermissionRepository {
     data: UpdatePermissionBodyType
     userId: number
   }): Promise<PermissionType & { roles: RoleType[] }> {
-    return await this.prismaService.permission.update({
+    const permission = await this.prismaService.permission.update({
       where: {
         id: permissionId,
         deletedAt: null,
@@ -87,10 +105,19 @@ export class PermissionRepository {
         roles: true,
       },
     })
+    return {
+      ...permission,
+      createdAt: permission.createdAt.toISOString(),
+      updatedAt: permission.updatedAt.toISOString(),
+      deletedAt: permission.deletedAt ? permission.deletedAt.toISOString() : null,
+    }
   }
 
-  async deletePermission({ permissionId, userId }: { permissionId: number; userId: number }, isHard?: boolean) : Promise<PermissionType & { roles: RoleType[] }> {
-    return isHard
+  async deletePermission(
+    { permissionId, userId }: { permissionId: number; userId: number },
+    isHard?: boolean,
+  ): Promise<PermissionType & { roles: RoleType[] }> {
+    const permission = isHard
       ? await this.prismaService.permission.delete({
           where: {
             id: permissionId,
@@ -112,5 +139,11 @@ export class PermissionRepository {
             roles: true,
           },
         })
+    return {
+      ...permission,
+      createdAt: permission.createdAt.toISOString(),
+      updatedAt: permission.updatedAt.toISOString(),
+      deletedAt: permission.deletedAt ? permission.deletedAt.toISOString() : null,
+    }
   }
 }

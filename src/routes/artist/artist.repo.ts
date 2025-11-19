@@ -26,15 +26,15 @@ export class ArtistRepository {
 
     if (query.createdFrom || query.createdTo) {
       where.createdAt = {
-        ...(query.createdFrom ? { gte: query.createdFrom } : {}),
-        ...(query.createdTo ? { lte: query.createdTo } : {}),
+        ...(query.createdFrom ? { gte: new Date(query.createdFrom) } : {}),
+        ...(query.createdTo ? { lte: new Date(query.createdTo) } : {}),
       }
     }
 
     if (query.updatedFrom || query.updatedTo) {
       where.updatedAt = {
-        ...(query.updatedFrom ? { gte: query.updatedFrom } : {}),
-        ...(query.updatedTo ? { lte: query.updatedTo } : {}),
+        ...(query.updatedFrom ? { gte: new Date(query.updatedFrom) } : {}),
+        ...(query.updatedTo ? { lte: new Date(query.updatedTo) } : {}),
       }
     }
 
