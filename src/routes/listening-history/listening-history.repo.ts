@@ -143,7 +143,7 @@ export class ListeningHistoryRepository {
       include: {
         album: { select: { coverImage: true } },
         songArtists: {
-          where: { role: 'MainArtist' },
+          where: { role: 'Main Artist' },
           include: {
             artist: {
               select: {
@@ -209,7 +209,7 @@ export class ListeningHistoryRepository {
                 select: { genreName: true },
               },
               songArtists: {
-                where: { role: 'MainArtist' },
+                where: { role: 'Main Artist' },
                 include: {
                   artist: {
                     select: { id: true, artistName: true },

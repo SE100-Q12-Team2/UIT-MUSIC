@@ -24,14 +24,14 @@ export class PlaybackService {
     const rs = song.asset.renditions
     let r: (typeof rs)[number] | undefined
 
-    if (quality === '320') r = rs.find((x) => x.type === 'MP3' && x.quality === 'Q320kbps')
-    if (!r && quality === '128') r = rs.find((x) => x.type === 'MP3' && x.quality === 'Q128kbps')
+    if (quality === '320') r = rs.find((x) => x.type === 'MP3' && x.quality === '320kbps')
+    if (!r && quality === '128') r = rs.find((x) => x.type === 'MP3' && x.quality === '128kbps')
     if (!r && quality === 'hls') r = rs.find((x) => x.type === 'HLS')
     if (!r) {
       r =
         rs.find((x) => x.type === 'HLS') ??
-        rs.find((x) => x.type === 'MP3' && x.quality === 'Q320kbps') ??
-        rs.find((x) => x.type === 'MP3' && x.quality === 'Q128kbps') ??
+        rs.find((x) => x.type === 'MP3' && x.quality === '320kbps') ??
+        rs.find((x) => x.type === 'MP3' && x.quality === '128kbps') ??
         undefined
     }
 
