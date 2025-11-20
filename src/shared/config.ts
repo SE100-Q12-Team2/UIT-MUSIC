@@ -11,18 +11,17 @@ const envFile =
     : '.env'
 
 // Load .env từ project root (process.cwd() khi bạn chạy "npm start" ở root)
+// Chỉ load file .env nếu tồn tại, không bắt buộc (vì Railway/production set qua env vars)
 const envPath = path.resolve(process.cwd(), envFile)
-if (!fs.existsSync(envPath)) {
+if (fs.existsSync(envPath)) {
+  dotenvConfig({ path: envPath })
+} else {
   // fallback sang .env nếu .env.<env> không có
   const fallback = path.resolve(process.cwd(), '.env')
   if (fs.existsSync(fallback)) {
     dotenvConfig({ path: fallback })
-  } else {
-    console.log(`Env file not found at ${envPath} or ${fallback}`)
-    process.exit(1)
   }
-} else {
-  dotenvConfig({ path: envPath })
+  // Không exit nếu không tìm thấy file - Railway/production dùng env vars
 }
 
 const DurationString = z.string().regex(/^\d+(ms|s|m|h|d|w)$/i)
