@@ -90,7 +90,15 @@ export class RoleRepository {
     }
   }
 
-  async updateRole({ data, id, userId }: { id: number; data: UpdateRoleBodyType; userId: number }): Promise<RoleType> {
+  async updateRole({
+    data,
+    id,
+    userId,
+  }: {
+    id: number
+    data: UpdateRoleBodyType
+    userId: number
+  }): Promise<RoleWithPermissionType> {
     if (data.permissionIds.length > 0) {
       const permissions = await this.prismaService.permission.findMany({
         where: {

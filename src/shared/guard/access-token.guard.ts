@@ -90,13 +90,23 @@ export class AccessTokenGuard implements CanActivate {
           throw new ForbiddenException()
         })
 
+      const permissionsWithStringDates = role.permissions.map((p) => ({
+        ...p,
+        createdAt: p.createdAt.toISOString(),
+        updatedAt: p.updatedAt.toISOString(),
+        deletedAt: p.deletedAt ? p.deletedAt.toISOString() : null,
+      }))
+
       const permissionsObject = keyBy<PermissionType>(
-        role.permissions,
+        permissionsWithStringDates,
         (permission) => `${permission.path}:${permission.method}`,
       ) as CacheRoleType['permissions']
 
       cachedRole = {
         ...role,
+        deletedAt: role.deletedAt ? role.deletedAt.toISOString() : null,
+        createdAt: role.createdAt.toISOString(),
+        updatedAt: role.updatedAt.toISOString(),
         permissions: permissionsObject,
       }
 

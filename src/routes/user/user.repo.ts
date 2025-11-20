@@ -20,7 +20,7 @@ export class UserRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
   async createUser(data: CreateUserBodyType, creatorId: number): Promise<UserResponseType> {
-    return await this.prismaService.user.create({
+    const user = await this.prismaService.user.create({
       data: {
         ...data,
         createdById: creatorId,
@@ -39,6 +39,13 @@ export class UserRepository {
         updatedAt: true,
       },
     })
+
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 
   async findUsers(query: GetUsersQueryType): Promise<PaginatedUsersResponseType> {
@@ -81,7 +88,7 @@ export class UserRepository {
       }
     }
 
-    const [totalItems, data] = await Promise.all([
+    const [totalItems, users] = await Promise.all([
       this.prismaService.user.count({ where }),
       this.prismaService.user.findMany({
         where,
@@ -106,6 +113,13 @@ export class UserRepository {
       }),
     ])
 
+    const data = users.map((user) => ({
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }))
+
     return {
       data,
       totalItems,
@@ -116,7 +130,7 @@ export class UserRepository {
   }
 
   async findUserById(id: number): Promise<UserResponseType | null> {
-    return await this.prismaService.user.findUnique({
+    const user = await this.prismaService.user.findUnique({
       where: {
         id,
         deletedAt: null,
@@ -135,10 +149,19 @@ export class UserRepository {
         updatedAt: true,
       },
     })
+
+    if (!user) return null
+
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 
   async findUserDetailById(id: number): Promise<UserDetailResponseType | null> {
-    return await this.prismaService.user.findUnique({
+    const user = await this.prismaService.user.findUnique({
       where: {
         id,
         deletedAt: null,
@@ -164,10 +187,19 @@ export class UserRepository {
         },
       },
     })
+
+    if (!user) return null
+
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 
   async updateUser(id: number, data: UpdateUserType, userId: number): Promise<UserResponseType> {
-    return await this.prismaService.user.update({
+    const user = await this.prismaService.user.update({
       where: {
         id,
         deletedAt: null,
@@ -190,10 +222,17 @@ export class UserRepository {
         updatedAt: true,
       },
     })
+
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 
   async updateUserStatus(id: number, data: UpdateUserStatusType, userId: number): Promise<UserResponseType> {
-    return await this.prismaService.user.update({
+    const user = await this.prismaService.user.update({
       where: {
         id,
         deletedAt: null,
@@ -216,10 +255,17 @@ export class UserRepository {
         updatedAt: true,
       },
     })
+
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 
   async updateUserRole(id: number, data: UpdateUserRoleType, userId: number): Promise<UserResponseType> {
-    return await this.prismaService.user.update({
+    const user = await this.prismaService.user.update({
       where: {
         id,
         deletedAt: null,
@@ -242,6 +288,13 @@ export class UserRepository {
         updatedAt: true,
       },
     })
+
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 
   async deleteUser(id: number, userId: number, isHard = false) {
