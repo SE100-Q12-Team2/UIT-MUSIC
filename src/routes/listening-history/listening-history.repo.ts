@@ -173,7 +173,10 @@ export class ListeningHistoryRepository {
     })
 
     return {
-      data,
+      data: data.map((item) => ({
+        ...item,
+        lastPlayedAt: item.lastPlayedAt.toISOString(),
+      })),
       totalItems: data.length,
     }
   }

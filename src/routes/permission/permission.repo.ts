@@ -110,6 +110,12 @@ export class PermissionRepository {
       createdAt: permission.createdAt.toISOString(),
       updatedAt: permission.updatedAt.toISOString(),
       deletedAt: permission.deletedAt ? permission.deletedAt.toISOString() : null,
+      roles: permission.roles.map((role) => ({
+        ...role,
+        createdAt: role.createdAt.toISOString(),
+        updatedAt: role.updatedAt.toISOString(),
+        deletedAt: role.deletedAt ? role.deletedAt.toISOString() : null,
+      })),
     }
   }
 
@@ -144,6 +150,12 @@ export class PermissionRepository {
       createdAt: permission.createdAt.toISOString(),
       updatedAt: permission.updatedAt.toISOString(),
       deletedAt: permission.deletedAt ? permission.deletedAt.toISOString() : null,
+      roles: permission.roles.map((r) => ({
+        ...r,
+        deletedAt: r.deletedAt ? r.deletedAt.toISOString() : null,
+        createdAt: r.createdAt.toISOString(),
+        updatedAt: r.updatedAt.toISOString(),
+      })),
     }
   }
 }

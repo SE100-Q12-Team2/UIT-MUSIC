@@ -36,8 +36,8 @@ export const VerificationCodeSchema = z.object({
     TypeOfVerificationCode.LOGIN,
     TypeOfVerificationCode.DISABLED_2FA,
   ]),
-  expiresAt: z.date(),
-  createdAt: z.date(),
+  expiresAt: z.string(),
+  createdAt: z.string(),
 })
 
 export const SendOTPBodySchema = VerificationCodeSchema.pick({
@@ -62,8 +62,8 @@ export const DeviceBodySchema = z.object({
   userId: z.number(),
   userAgent: z.string(),
   ip: z.string(),
-  lastActive: z.date(),
-  createdAt: z.date(),
+  lastActive: z.string(),
+  createdAt: z.string(),
   isActive: z.boolean(),
 })
 
@@ -71,8 +71,8 @@ export const RefreshTokenSchema = z.object({
   token: z.string(),
   userId: z.number(),
   deviceId: z.number(),
-  expiresAt: z.date(),
-  createdAt: z.date(),
+  expiresAt: z.string(),
+  createdAt: z.string(),
 })
 
 export const RefreshTokenBodySchema = z

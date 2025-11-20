@@ -18,14 +18,68 @@ async function bootstrap() {
     bufferLogs: true,
   })
 
-  const openApiDoc = SwaggerModule.createDocument(
-    app,
-    new DocumentBuilder().setTitle('UIT-Music API').setDescription('Example API description').setVersion('1.0').build(),
-  )
-  SwaggerModule.setup('api', app, cleanupOpenApiDoc(openApiDoc))
+  const config = new DocumentBuilder()
+    .setTitle('UIT-Music API')
+    .setDescription(
+      'Music streaming platform API with features including user authentication, music playback, playlists, favorites, subscriptions, and recommendations.',
+    )
+    .setVersion('1.0.0')
+    .setContact('UIT-Music Team', 'https://uit-music.com', 'ntuanloc205@gmail.com')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
+    .addTag('Authentication', 'User authentication and authorization endpoints')
+    .addTag('Albums', 'Album management and browsing')
+    .addTag('Artists', 'Artist management and discovery')
+    .addTag('Songs', 'Song management, playback, and streaming')
+    .addTag('Playlists', 'User playlist creation and management')
+    .addTag('Favorites', 'User favorite songs and collections')
+    .addTag('Follow', 'Follow artists and record labels')
+    .addTag('Genres', 'Music genre management')
+    .addTag('Users', 'User account management')
+    .addTag('Profile', 'User profile settings')
+    .addTag('Subscriptions', 'Premium subscription plans and management')
+    .addTag('Payments', 'Payment processing and transactions')
+    .addTag('Media', 'Media upload, processing, and playback')
+    .addTag('Search', 'Search songs, albums, artists, and playlists')
+    .addTag('Recommendations', 'Personalized music recommendations')
+    .addTag('Statistics', 'Platform analytics and user statistics')
+    .addTag('Listening History', 'User listening history tracking')
+    .addTag('Ratings', 'Song rating system')
+    .addTag('Notifications', 'User notification management')
+    .addTag('Copyright', 'Copyright reporting and management')
+    .addTag('Advertisements', 'Advertisement management')
+    .addTag('Roles & Permissions', 'Access control and permissions')
+    .build()
+
+  const openApiDoc = SwaggerModule.createDocument(app, config)
+  SwaggerModule.setup('api', app, cleanupOpenApiDoc(openApiDoc), {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+      docExpansion: 'none',
+      filter: true,
+      tryItOutEnabled: true,
+    },
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'UIT-Music API Documentation',
+  })
 
   app.useGlobalPipes(new ZodValidationPipe())
 
-  await app.listen(process.env.PORT ?? 3000)
+  const port = process.env.PORT ?? 3000
+  await app.listen(port)
+
+  console.log(`🚀 Application is running on: http://localhost:${port}`)
+  console.log(`📚 Swagger documentation: http://localhost:${port}/api`)
 }
 bootstrap()

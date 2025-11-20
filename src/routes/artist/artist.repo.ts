@@ -51,7 +51,11 @@ export class ArtistRepository {
     ])
 
     return {
-      data,
+      data: data.map((artist) => ({
+        ...artist,
+        createdAt: artist.createdAt.toISOString(),
+        updatedAt: artist.updatedAt.toISOString(),
+      })),
       page: query.page,
       totalPages: Math.ceil(totalItems / query.limit),
       totalItems,
@@ -64,7 +68,7 @@ export class ArtistRepository {
   }
 
   async create(body: CreateArtistBodyType): Promise<CreateArtistResType> {
-    return await this.prisma.artist.create({
+    const artist = await this.prisma.artist.create({
       data: {
         artistName: body.artistName,
         biography: body.biography ?? null,
@@ -72,6 +76,12 @@ export class ArtistRepository {
         hasPublicProfile: body.hasPublicProfile ?? true,
       },
     })
+
+    return {
+      ...artist,
+      createdAt: artist.createdAt.toISOString(),
+      updatedAt: artist.updatedAt.toISOString(),
+    }
   }
 
   async update(id: number, body: Partial<UpdateArtistBodyType>) {

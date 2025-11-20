@@ -32,7 +32,12 @@ export class RoleRepository {
     ])
 
     return {
-      data,
+      data: data.map((role) => ({
+        ...role,
+        deletedAt: role.deletedAt ? role.deletedAt.toISOString() : null,
+        createdAt: role.createdAt.toISOString(),
+        updatedAt: role.updatedAt.toISOString(),
+      })),
       totalItems,
       page: query.page,
       limit: query.limit,
@@ -57,6 +62,9 @@ export class RoleRepository {
     if (!role) return null
     return {
       ...role,
+      deletedAt: role.deletedAt ? role.deletedAt.toISOString() : null,
+      createdAt: role.createdAt.toISOString(),
+      updatedAt: role.updatedAt.toISOString(),
       permissions: role.permissions.map((p) => ({
         ...p,
         createdAt: p.createdAt.toISOString(),
@@ -67,12 +75,19 @@ export class RoleRepository {
   }
 
   async createRole({ data, userId }: { data: CreateRoleBodyType; userId: number }): Promise<RoleType> {
-    return await this.prismaService.role.create({
+    const role = await this.prismaService.role.create({
       data: {
         ...data,
         createdById: userId,
       },
     })
+
+    return {
+      ...role,
+      deletedAt: role.deletedAt ? role.deletedAt.toISOString() : null,
+      createdAt: role.createdAt.toISOString(),
+      updatedAt: role.updatedAt.toISOString(),
+    }
   }
 
   async updateRole({ data, id, userId }: { id: number; data: UpdateRoleBodyType; userId: number }): Promise<RoleType> {
@@ -98,7 +113,7 @@ export class RoleRepository {
       }
     }
 
-    return await this.prismaService.role.update({
+    const role = await this.prismaService.role.update({
       where: {
         id: id,
         deletedAt: null,
@@ -120,6 +135,19 @@ export class RoleRepository {
         },
       },
     })
+
+    return {
+      ...role,
+      deletedAt: role.deletedAt ? role.deletedAt.toISOString() : null,
+      createdAt: role.createdAt.toISOString(),
+      updatedAt: role.updatedAt.toISOString(),
+      permissions: role.permissions.map((p) => ({
+        ...p,
+        deletedAt: p.deletedAt ? p.deletedAt.toISOString() : null,
+        createdAt: p.createdAt.toISOString(),
+        updatedAt: p.updatedAt.toISOString(),
+      })),
+    }
   }
 
   async deleteRole({ id, userId }: { id: number; userId: number }, isHard?: boolean) {

@@ -8,7 +8,13 @@ import {
   OTPFailedException,
   RevokedRefreshTokenException,
 } from 'src/routes/auth/auth.error'
-import { ForgotPasswordBodyType, LoginBodyType, RegisterBodyType, ResetPasswordBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model'
+import {
+  ForgotPasswordBodyType,
+  LoginBodyType,
+  RegisterBodyType,
+  ResetPasswordBodyType,
+  SendOTPBodyType,
+} from 'src/routes/auth/auth.model'
 import { AuthRepository } from 'src/routes/auth/auth.repo'
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant'
 import { isUniqueConstraintPrismaError } from 'src/shared/helpers'
@@ -85,7 +91,7 @@ export class AuthService {
       throw InvalidOTPException
     }
 
-    if (verificationCode && verificationCode.expiresAt < new Date()) {
+    if (verificationCode && new Date(verificationCode.expiresAt) < new Date()) {
       throw ExpiredOTPException
     }
 
@@ -110,7 +116,7 @@ export class AuthService {
       code,
       email: body.email,
       type: body.type,
-      expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN)),
+      expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN)).toISOString(),
     })
 
     const { error } = await this.emailService.sendOTP({
@@ -252,7 +258,7 @@ export class AuthService {
       await this.sharedResetPasswordTokenRepo.createResetToken({
         token: resetPasswordToken,
         userId: user.id,
-        expiresAt: new Date(expMs),
+        expiresAt: new Date(expMs).toISOString(),
       })
 
       await this.emailService.sendOTP({

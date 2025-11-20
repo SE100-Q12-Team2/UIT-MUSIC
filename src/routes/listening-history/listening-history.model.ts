@@ -135,7 +135,7 @@ export const RecentlyPlayedResponseSchema = z.object({
       songId: z.number(),
       title: z.string(),
       coverImageUrl: z.string().nullable(),
-      lastPlayedAt: z.date(),
+      lastPlayedAt: z.string(),
       playCount: z.number(),
       artists: z.array(
         z.object({

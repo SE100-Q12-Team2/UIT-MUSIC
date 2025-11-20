@@ -19,9 +19,17 @@ export class AuthRepository {
           }
         },
   ): Promise<VerificationCodeType | null> {
-    return await this.prismaService.verificationCode.findUnique({
+    const code = await this.prismaService.verificationCode.findUnique({
       where: uniqueValue,
     })
+
+    if (!code) return null
+
+    return {
+      ...code,
+      expiresAt: code.expiresAt.toISOString(),
+      createdAt: code.createdAt.toISOString(),
+    }
   }
 
   async createVerificationCode(payload: Pick<VerificationCodeType, 'email' | 'code' | 'type' | 'expiresAt'>) {
@@ -50,20 +58,33 @@ export class AuthRepository {
           }
         },
   ): Promise<VerificationCodeType> {
-    return await this.prismaService.verificationCode.delete({
+    const code = await this.prismaService.verificationCode.delete({
       where: uniqueValue,
     })
+
+    return {
+      ...code,
+      expiresAt: code.expiresAt.toISOString(),
+      createdAt: code.createdAt.toISOString(),
+    }
   }
 
   async createUser(
     user: Omit<RegisterBodyType, 'confirmPassword' | 'code'> & Pick<UserType, 'roleId'>,
   ): Promise<Omit<UserType, 'password'>> {
-    return this.prismaService.user.create({
+    const newUser = await this.prismaService.user.create({
       data: user,
       omit: {
         password: true,
       },
     })
+
+    return {
+      ...newUser,
+      dateOfBirth: newUser.dateOfBirth ? newUser.dateOfBirth.toISOString() : null,
+      createdAt: newUser.createdAt.toISOString(),
+      updatedAt: newUser.updatedAt.toISOString(),
+    }
   }
 
   async createDevice(
@@ -76,12 +97,18 @@ export class AuthRepository {
   }
 
   async updateDevice(deviceId: number, data: Partial<DeviceBodyType>): Promise<DeviceBodyType> {
-    return await this.prismaService.device.update({
+    const device = await this.prismaService.device.update({
       data,
       where: {
         id: deviceId,
       },
     })
+
+    return {
+      ...device,
+      lastActive: device.lastActive.toISOString(),
+      createdAt: device.createdAt.toISOString(),
+    }
   }
 
   async createRefreshToken(data: { token: string; userId: number; deviceId: number; expiresAt: Date }) {
@@ -93,7 +120,7 @@ export class AuthRepository {
   async findUniqueRefreshTokenIncludeUserRole(
     refreshToken: string,
   ): Promise<(RefreshTokenType & { user: UserType & { role: RoleType } }) | null> {
-    return this.prismaService.refreshToken.findUnique({
+    const token = await this.prismaService.refreshToken.findUnique({
       where: {
         token: refreshToken,
       },
@@ -105,14 +132,40 @@ export class AuthRepository {
         },
       },
     })
+
+    if (!token) return null
+
+    return {
+      ...token,
+      expiresAt: token.expiresAt.toISOString(),
+      createdAt: token.createdAt.toISOString(),
+      user: {
+        ...token.user,
+        dateOfBirth: token.user.dateOfBirth ? token.user.dateOfBirth.toISOString() : null,
+        createdAt: token.user.createdAt.toISOString(),
+        updatedAt: token.user.updatedAt.toISOString(),
+        role: {
+          ...token.user.role,
+          deletedAt: token.user.role.deletedAt ? token.user.role.deletedAt.toISOString() : null,
+          createdAt: token.user.role.createdAt.toISOString(),
+          updatedAt: token.user.role.updatedAt.toISOString(),
+        },
+      },
+    }
   }
 
   async deleteRefreshToken(token: string): Promise<RefreshTokenType> {
-    return await this.prismaService.refreshToken.delete({
+    const refreshToken = await this.prismaService.refreshToken.delete({
       where: {
         token,
       },
     })
+
+    return {
+      ...refreshToken,
+      expiresAt: refreshToken.expiresAt.toISOString(),
+      createdAt: refreshToken.createdAt.toISOString(),
+    }
   }
 
   async deleteRefreshTokenByUserId(userId: number) {

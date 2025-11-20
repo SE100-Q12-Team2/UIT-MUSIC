@@ -8,8 +8,8 @@ export const ListPlaylistTracksQuerySchema = z.object({
   sort: z.enum(['position', 'addedAt']).default('position'),
   order: z.enum(['asc', 'desc']).default('asc'),
 
-  addedFrom: z.coerce.date().optional(),
-  addedTo: z.coerce.date().optional(),
+  addedFrom: z.string().optional(),
+  addedTo: z.string().optional(),
   minDuration: z.coerce.number().int().min(0).optional(),
   maxDuration: z.coerce.number().int().min(0).optional(),
   songTitle: z.string().trim().optional(),

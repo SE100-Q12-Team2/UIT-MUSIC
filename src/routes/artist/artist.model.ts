@@ -6,8 +6,8 @@ export const ArtistSchema = z.object({
   biography: z.string().nullable(),
   profileImage: z.string().url().nullable(),
   hasPublicProfile: z.boolean(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 export const GetArtistQuerySchema = z

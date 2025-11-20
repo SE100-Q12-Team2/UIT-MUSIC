@@ -13,12 +13,19 @@ export class SharedUserRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findUnique(where: WhereUserType): Promise<UserType | null> {
-    return await this.prismaService.user.findFirst({
+    const user = await this.prismaService.user.findFirst({
       where: {
         ...where,
         deletedAt: null,
       },
     })
+    if (!user) return null
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 
   async findUniqueIncRolePermissions(where: WhereUserType): Promise<GetUserIncRolePermissionsType | null> {
@@ -42,8 +49,14 @@ export class SharedUserRepository {
     if (!user) return null
     return {
       ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
       role: {
         ...user.role,
+        createdAt: user.role.createdAt.toISOString(),
+        updatedAt: user.role.updatedAt.toISOString(),
+        deletedAt: user.role.deletedAt ? user.role.deletedAt.toISOString() : null,
         permissions: user.role.permissions.map((p) => ({
           ...p,
           createdAt: p.createdAt.toISOString(),
@@ -61,7 +74,7 @@ export class SharedUserRepository {
     where: { id: number }
     data: Partial<UserType>
   }): Promise<Omit<UserType, 'totpSecret' | 'password'>> {
-    return await this.prismaService.user.update({
+    const user = await this.prismaService.user.update({
       where: {
         ...where,
         deletedAt: null,
@@ -71,5 +84,11 @@ export class SharedUserRepository {
         updatedById: where.id,
       },
     })
+    return {
+      ...user,
+      dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString() : null,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+    }
   }
 }

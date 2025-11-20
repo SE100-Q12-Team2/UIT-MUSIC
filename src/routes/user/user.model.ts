@@ -6,16 +6,16 @@ export const UserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(255),
   fullName: z.string().min(1).max(255),
-  dateOfBirth: z.coerce.date().nullable(),
+  dateOfBirth: z.string().nullable(),
   gender: GenderEnum.nullable().default('Male'),
   accountStatus: AccountStatusEnum.default('Active'),
   roleId: z.number(),
   createdById: z.number().nullable(),
   updatedById: z.number().nullable(),
   deletedById: z.number().nullable(),
-  deletedAt: z.date().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  deletedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
 })
 
 export const UserResponseSchema = UserSchema.omit({
