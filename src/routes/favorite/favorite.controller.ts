@@ -10,14 +10,17 @@ import {
 } from 'src/routes/favorite/favorite.dto'
 import { FavoriteService } from 'src/routes/favorite/favorite.service'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @Controller('favorites')
+@Auth([AuthType.None])
 export class FavoriteController {
   constructor(private readonly favoriteService: FavoriteService) {}
 
   /**
    * GET /favorites?userId=1&limit=20&page=1&sort=likedAt&order=desc
-   */ 
+   */
   @Get()
   @ZodSerializerDto(GetFavoritesResponseDTO)
   getUserFavorites(@Query() query: GetFavoritesQueryDTO) {
@@ -44,12 +47,14 @@ export class FavoriteController {
   }
 
   @Post()
+  @Auth([AuthType.Bearer])
   @ZodSerializerDto(AddFavoriteResDTO)
   addFavorite(@Body() body: AddFavoriteBodyDTO) {
     return this.favoriteService.addFavorite(body)
   }
 
   @Delete(':userId/:songId')
+  @Auth([AuthType.Bearer])
   @ZodSerializerDto(MessageResDTO)
   removeFavorite(@Param('userId') userId: string, @Param('songId') songId: string) {
     return this.favoriteService.removeFavorite(Number(userId), Number(songId))

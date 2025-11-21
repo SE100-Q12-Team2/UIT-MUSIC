@@ -10,8 +10,11 @@ import {
 import { PlaylistTracksService } from 'src/routes/playlist-track/playlist-track.service'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @Controller('playlists/:playlistId/tracks')
+@Auth([AuthType.Bearer])
 export class PlaylistTracksController {
   constructor(private readonly service: PlaylistTracksService) {}
 

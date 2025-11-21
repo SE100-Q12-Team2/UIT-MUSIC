@@ -11,9 +11,12 @@ import {
 } from 'src/routes/playlist/playlist.dto'
 import { PlaylistService } from 'src/routes/playlist/playlist.service'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @ApiTags('Playlists')
 @Controller('playlists')
+@Auth([AuthType.None])
 export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
@@ -54,6 +57,7 @@ export class PlaylistController {
   }
 
   @Post()
+  @Auth([AuthType.Bearer])
   @ZodSerializerDto(CreatePlaylistResDTO)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
@@ -68,6 +72,7 @@ export class PlaylistController {
   }
 
   @Put(':id')
+  @Auth([AuthType.Bearer])
   @ZodSerializerDto(UpdatePlaylistResDTO)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
@@ -84,6 +89,7 @@ export class PlaylistController {
   }
 
   @Delete(':id')
+  @Auth([AuthType.Bearer])
   @ZodSerializerDto(MessageResDTO)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({

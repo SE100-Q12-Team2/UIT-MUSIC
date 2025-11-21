@@ -8,10 +8,12 @@ import {
   SongRatingStatsDto,
   UserRatingStatsDto,
 } from './user-song-rating.dto'
-import { IsPublic } from 'src/shared/decorators/auth.decorator'
+import { IsPublic, Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 
 @Controller('ratings')
+@Auth([AuthType.Bearer])
 export class UserSongRatingController {
   constructor(private readonly ratingService: UserSongRatingService) {}
 
@@ -65,7 +67,7 @@ export class UserSongRatingController {
   @IsPublic()
   async getSongRatingStats(
     @Param('songId', ParseIntPipe) songId: number,
-    @ActiveUser('userId') userId?: number
+    @ActiveUser('userId') userId?: number,
   ): Promise<SongRatingStatsDto> {
     return this.ratingService.getSongRatingStats(songId, userId)
   }

@@ -4,8 +4,11 @@ import { DeviceService } from './device.service'
 import { QueryDevicesDto, DeviceResponseDto, DeviceStatsDto } from './device.dto'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @Controller('devices')
+@Auth([AuthType.Bearer])
 export class DeviceController {
   constructor(private readonly deviceService: DeviceService) {}
 

@@ -11,8 +11,11 @@ import {
 } from 'src/routes/follow/follow.dto'
 import { FollowService } from 'src/routes/follow/follow.service'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @Controller('follows')
+@Auth([AuthType.None])
 export class FollowController {
   constructor(private readonly followService: FollowService) {}
 

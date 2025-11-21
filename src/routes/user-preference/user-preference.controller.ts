@@ -4,8 +4,11 @@ import { UserPreferenceService } from './user-preference.service'
 import { CreateUserPreferenceDto, UpdateUserPreferenceDto, UserPreferenceResponseDto } from './user-preference.dto'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @Controller('user-preferences')
+@Auth([AuthType.Bearer])
 export class UserPreferenceController {
   constructor(private readonly userPreferenceService: UserPreferenceService) {}
 

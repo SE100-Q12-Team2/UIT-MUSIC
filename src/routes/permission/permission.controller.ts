@@ -7,8 +7,11 @@ import {
 } from 'src/routes/permission/permission.dto'
 import { PermissionService } from 'src/routes/permission/permission.service'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @Controller('permission')
+@Auth([AuthType.Bearer])
 export class PermissionController {
   constructor(private readonly permissionService: PermissionService) {}
 
@@ -34,11 +37,15 @@ export class PermissionController {
   }
 
   @Put(':id')
-  async update(@Param() param: GetPermissionParamDTO, @Body() body: UpdatePermissionBodyDTO, @ActiveUser('userId') userId: number) {
+  async update(
+    @Param() param: GetPermissionParamDTO,
+    @Body() body: UpdatePermissionBodyDTO,
+    @ActiveUser('userId') userId: number,
+  ) {
     return this.permissionService.updatePermission({
       permissionId: param.id,
       data: body,
-      userId
+      userId,
     })
   }
 
@@ -46,7 +53,7 @@ export class PermissionController {
   async delete(@Param() param: GetPermissionParamDTO, @ActiveUser('userId') userId: number) {
     return this.permissionService.deletePermission({
       permissionId: param.id,
-      userId
+      userId,
     })
   }
 }

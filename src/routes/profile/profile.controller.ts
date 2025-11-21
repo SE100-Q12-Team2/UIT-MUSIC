@@ -5,8 +5,11 @@ import { ZodSerializerDto } from 'nestjs-zod'
 import { ChangePasswordBodyDTO, UpdateProfileBodyDTO } from 'src/routes/profile/profile.dto'
 import { GetUserProfileResDTO, UpdateProfileResDTO } from 'src/shared/dtos/shared-user.dto'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Auth } from 'src/shared/decorators/auth.decorator'
+import { AuthType } from 'src/shared/constants/auth.constant'
 
 @Controller('profile')
+@Auth([AuthType.Bearer])
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
