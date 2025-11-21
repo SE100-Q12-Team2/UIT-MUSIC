@@ -16,8 +16,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Generate Prisma Client
-RUN npx prisma generate
+# Generate Prisma Client (use dummy DATABASE_URL for build)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost/dummy" npx prisma generate
 
 # Build application
 RUN npm run build
@@ -44,8 +44,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 # Copy other necessary files
 COPY emails ./emails
 
-# Generate Prisma Client in production
-RUN npx prisma generate
+# Generate Prisma Client in production (use dummy DATABASE_URL for generation)
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost/dummy" npx prisma generate
 
 # Expose port (Railway sets PORT env var)
 EXPOSE 3000
