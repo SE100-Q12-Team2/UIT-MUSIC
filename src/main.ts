@@ -3,6 +3,7 @@ import { AppModule } from './app.module'
 import { cleanupOpenApiDoc, ZodValidationPipe } from 'nestjs-zod'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
+import { Logger } from '@nestjs/common'
 
 BigInt.prototype.toJSON = function () {
   const num = Number(this)
@@ -14,8 +15,26 @@ BigInt.prototype.toJSON = function () {
 }
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap')
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
+  })
+
+  app.set('trust proxy', true)
+
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  })
+
+  app.use((req, res, next) => {
+    try {
+      const shortAuth = (req.headers?.authorization ?? '').toString().slice(0, 100)
+      logger.debug(`${req.method} ${req.originalUrl} - AuthHeaderPresent=${!!req.headers?.authorization} auth=${shortAuth}`)
+    } catch (e) {
+      // noop
+    }
+    next()
   })
 
   const config = new DocumentBuilder()
@@ -79,7 +98,11 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000
   await app.listen(port)
 
-  console.log(`🚀 Application is running on: http://localhost:${port}`)
-  console.log(`📚 Swagger documentation: http://localhost:${port}/api`)
+  logger.log(`🚀 Application is running on: http://localhost:${port}`)
+  logger.log(`📚 Swagger documentation: http://localhost:${port}/api`)
 }
-bootstrap()
+
+bootstrap().catch((err) => {
+  console.error('Bootstrap failed', err)
+  process.exit(1)
+})
