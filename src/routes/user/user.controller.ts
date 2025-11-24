@@ -14,7 +14,6 @@ import {
 import { Auth } from 'src/shared/decorators/auth.decorator'
 import { ActiveUser } from 'src/shared/decorators/active-user.decorator'
 import { AuthType } from 'src/shared/constants/auth.constant'
-import { AccessTokenPayloadCreate, AccessTokenPayloadReturn } from 'src/shared/types/jwt.type'
 
 @Controller('users')
 export class UserController {
