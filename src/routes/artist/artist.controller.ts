@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger'
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, HttpCode, HttpStatus, Logger } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiBody } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
   CreateArtistBodyDto,
@@ -19,6 +19,8 @@ import { MessageResDTO } from 'src/shared/dtos/response.dto'
 @Controller('artists')
 @Auth([AuthType.Bearer])
 export class ArtistController {
+  private readonly logger = new Logger(ArtistController.name)
+
   constructor(private readonly service: ArtistService) {}
 
   @Get()
@@ -44,69 +46,115 @@ export class ArtistController {
     description: 'Sort field',
   })
   @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
-  @ApiResponse({ status: 200, description: 'Artists retrieved successfully', type: GetArtistsResponseDto })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiOkResponse({ description: 'Artists retrieved successfully', type: GetArtistsResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
   async list(@Query() query: GetArtistQueryDto) {
-    return await this.service.list(query)
+    try {
+      this.logger.log(`Get artists with query: ${JSON.stringify(query)}`)
+      const result = await this.service.list(query)
+      this.logger.log(`Retrieved ${result.data.length} artists`)
+      return result
+    } catch (error) {
+      this.logger.error('Failed to get artists', error.stack)
+      throw error
+    }
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(ArtistResponseDto)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Get artist by ID',
-    description: 'Retrieve detailed information about a specific artist',
+    description: 'Retrieve detailed information about a specific artist including name, biography, profile image, and statistics. Requires authentication.',
   })
   @ApiParam({ name: 'id', type: Number, description: 'Artist ID' })
-  @ApiResponse({ status: 200, description: 'Artist found', type: ArtistResponseDto })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Artist not found' })
+  @ApiOkResponse({ description: 'Artist found', type: ArtistResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
+  @ApiNotFoundResponse({ description: 'Artist not found' })
   async get(@Param('id', ParseIntPipe) id: number) {
-    return await this.service.get(id)
+    try {
+      this.logger.log(`Get artist by ID: ${id}`)
+      const result = await this.service.get(id)
+      this.logger.log(`Artist retrieved: ${id}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to get artist ${id}`, error.stack)
+      throw error
+    }
   }
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @ZodSerializerDto(CreateArtistResDto)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Create new artist',
-    description: 'Create a new artist profile with name, biography, and profile image',
+    description: 'Create a new artist profile with name, biography, profile image, and public profile settings. Requires authentication.',
   })
-  @ApiResponse({ status: 201, description: 'Artist created successfully', type: CreateArtistResDto })
-  @ApiResponse({ status: 400, description: 'Invalid artist data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBody({ type: CreateArtistBodyDto, description: 'Artist creation data' })
+  @ApiCreatedResponse({ description: 'Artist created successfully', type: CreateArtistResDto })
+  @ApiBadRequestResponse({ description: 'Invalid artist data or validation failed' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
   async create(@Body() body: CreateArtistBodyDto) {
-    return await this.service.create(body)
+    try {
+      this.logger.log(`Create artist: ${body.artistName}`)
+      const result = await this.service.create(body)
+      this.logger.log(`Artist created successfully: ${result.id}`)
+      return result
+    } catch (error) {
+      this.logger.error('Failed to create artist', error.stack)
+      throw error
+    }
   }
 
   @Patch(':id')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(UpdateArtistResDto)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Update artist',
-    description: 'Update artist profile information',
+    description: 'Update artist profile information including name, biography, profile image, and public profile status. Requires authentication.',
   })
-  @ApiParam({ name: 'id', type: Number, description: 'Artist ID' })
-  @ApiResponse({ status: 200, description: 'Artist updated successfully', type: UpdateArtistResDto })
-  @ApiResponse({ status: 400, description: 'Invalid artist data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Artist not found' })
+  @ApiParam({ name: 'id', type: Number, description: 'Artist ID to update' })
+  @ApiBody({ type: UpdateArtistBodyDto, description: 'Updated artist fields' })
+  @ApiOkResponse({ description: 'Artist updated successfully', type: UpdateArtistResDto })
+  @ApiBadRequestResponse({ description: 'Invalid artist data or validation failed' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
+  @ApiNotFoundResponse({ description: 'Artist not found' })
   async update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateArtistBodyDto) {
-    return await this.service.update(id, body)
+    try {
+      this.logger.log(`Update artist: ${id}`)
+      const result = await this.service.update(id, body)
+      this.logger.log(`Artist updated successfully: ${id}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to update artist ${id}`, error.stack)
+      throw error
+    }
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(MessageResDTO)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Delete artist',
-    description: 'Delete an artist profile from the platform',
+    description: 'Soft delete an artist profile from the platform. Artist will be marked as deleted. Requires authentication.',
   })
-  @ApiParam({ name: 'id', type: Number, description: 'Artist ID' })
-  @ApiResponse({ status: 200, description: 'Artist deleted successfully', type: MessageResDTO })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Artist not found' })
+  @ApiParam({ name: 'id', type: Number, description: 'Artist ID to delete' })
+  @ApiOkResponse({ description: 'Artist deleted successfully', type: MessageResDTO })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
+  @ApiNotFoundResponse({ description: 'Artist not found' })
   async remove(@Param('id', ParseIntPipe) id: number) {
-    return await this.service.remove(id)
+    try {
+      this.logger.log(`Delete artist: ${id}`)
+      const result = await this.service.remove(id)
+      this.logger.log(`Artist deleted successfully: ${id}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to delete artist ${id}`, error.stack)
+      throw error
+    }
   }
 }

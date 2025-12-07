@@ -35,7 +35,6 @@ export const UserSchema = z.object({
 })
 
 export const GetUserProfileSchema = UserSchema.omit({
-  totpSecret: true,
   password: true,
 }).extend({
   role: RoleSchema.pick({

@@ -73,7 +73,7 @@ export class SharedUserRepository {
   }: {
     where: { id: number }
     data: Partial<UserType>
-  }): Promise<Omit<UserType, 'totpSecret' | 'password'>> {
+  }): Promise<Omit<UserType, 'password'>> {
     const user = await this.prismaService.user.update({
       where: {
         ...where,

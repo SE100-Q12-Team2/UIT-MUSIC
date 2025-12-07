@@ -15,7 +15,7 @@ export const FavoriteSongInfoSchema = z.object({
   albumId: z.number().int().nullable(),
   genreId: z.number().int().nullable(),
   uploadDate: z.string(),
-  playCount: z.bigint(),
+  playCount: z.number().int(),
   isActive: z.boolean(),
 })
 

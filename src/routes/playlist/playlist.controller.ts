@@ -1,5 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, HttpCode, HttpStatus, Logger } from '@nestjs/common'
+import { 
+  ApiTags, 
+  ApiOperation, 
+  ApiResponse, 
+  ApiBearerAuth, 
+  ApiParam, 
+  ApiQuery,
+  ApiBody,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
   CreatePlaylistBodyDTO,
@@ -18,13 +31,16 @@ import { AuthType } from 'src/shared/constants/auth.constant'
 @Controller('playlists')
 @Auth([AuthType.None])
 export class PlaylistController {
+  private readonly logger = new Logger(PlaylistController.name)
+
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Get()
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(GetAllPlaylistsDTO)
   @ApiOperation({
     summary: 'Get all playlists',
-    description: 'Retrieve paginated list of playlists with optional filtering by owner, privacy, and tags',
+    description: 'Retrieve paginated list of playlists with optional filtering by owner, privacy, tags, and search query. Public access available.',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 20, max: 100)' })
@@ -38,69 +54,148 @@ export class PlaylistController {
     description: 'Sort field',
   })
   @ApiQuery({ name: 'order', required: false, enum: ['asc', 'desc'], description: 'Sort order' })
-  @ApiResponse({ status: 200, description: 'Playlists retrieved successfully', type: GetAllPlaylistsDTO })
+  @ApiOkResponse({ 
+    description: 'Playlists retrieved successfully', 
+    type: GetAllPlaylistsDTO,
+  })
   getPlaylists(@Query() query: GetPlaylistQueryDTO) {
-    return this.playlistService.getAllPlaylists(query)
+    try {
+      this.logger.log(`Get playlists request with filters: ${JSON.stringify(query)}`)
+      return this.playlistService.getAllPlaylists(query)
+    } catch (error) {
+      this.logger.error('Failed to get playlists', error.stack)
+      throw error
+    }
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(GetPlaylistQueryDTO)
   @ApiOperation({
     summary: 'Get playlist by ID',
-    description: 'Retrieve detailed information about a specific playlist including all tracks',
+    description: 'Retrieve detailed information about a specific playlist including all tracks, owner info, and track count.',
   })
   @ApiParam({ name: 'id', type: String, description: 'Playlist ID' })
-  @ApiResponse({ status: 200, description: 'Playlist found', type: GetPlaylistQueryDTO })
-  @ApiResponse({ status: 404, description: 'Playlist not found' })
+  @ApiOkResponse({ 
+    description: 'Playlist found and retrieved successfully', 
+    type: GetPlaylistQueryDTO,
+  })
+  @ApiNotFoundResponse({ 
+    description: 'Playlist not found',
+  })
   getPlayListById(@Param('id') id: string) {
-    return this.playlistService.getPlaylistById(Number(id))
+    try {
+      this.logger.log(`Get playlist by ID: ${id}`)
+      return this.playlistService.getPlaylistById(Number(id))
+    } catch (error) {
+      this.logger.error(`Failed to get playlist by ID: ${id}`, error.stack)
+      throw error
+    }
   }
 
   @Post()
   @Auth([AuthType.Bearer])
+  @HttpCode(HttpStatus.CREATED)
   @ZodSerializerDto(CreatePlaylistResDTO)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Create new playlist',
-    description: 'Create a new playlist with name, description, and privacy settings',
+    description: 'Create a new playlist with name, description, cover image, privacy settings, and tags. Requires authentication.',
   })
-  @ApiResponse({ status: 201, description: 'Playlist created successfully', type: CreatePlaylistResDTO })
-  @ApiResponse({ status: 400, description: 'Invalid playlist data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiBody({
+    type: CreatePlaylistBodyDTO,
+    description: 'Playlist information',
+  })
+  @ApiCreatedResponse({ 
+    description: 'Playlist created successfully', 
+    type: CreatePlaylistResDTO,
+  })
+  @ApiBadRequestResponse({ 
+    description: 'Invalid playlist data or validation failed',
+  })
+  @ApiUnauthorizedResponse({ 
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
   createPlaylist(@Body() body: CreatePlaylistBodyDTO) {
-    return this.playlistService.createPlaylist(body)
+    try {
+      this.logger.log(`Create playlist: ${body.playlistName}`)
+      const result = this.playlistService.createPlaylist(body)
+      this.logger.log(`Playlist created successfully`)
+      return result
+    } catch (error) {
+      this.logger.error('Failed to create playlist', error.stack)
+      throw error
+    }
   }
 
   @Put(':id')
   @Auth([AuthType.Bearer])
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(UpdatePlaylistResDTO)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Update playlist',
-    description: 'Update playlist information including name, description, cover image, and privacy settings',
+    description: 'Update playlist information including name, description, cover image, privacy settings, and tags. Requires authentication and ownership.',
   })
-  @ApiParam({ name: 'id', type: String, description: 'Playlist ID' })
-  @ApiResponse({ status: 200, description: 'Playlist updated successfully', type: UpdatePlaylistResDTO })
-  @ApiResponse({ status: 400, description: 'Invalid playlist data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Playlist not found' })
+  @ApiParam({ name: 'id', type: String, description: 'Playlist ID to update' })
+  @ApiBody({
+    type: UpdatePlaylistBodyDTO,
+    description: 'Updated playlist fields',
+  })
+  @ApiOkResponse({ 
+    description: 'Playlist updated successfully', 
+    type: UpdatePlaylistResDTO,
+  })
+  @ApiBadRequestResponse({ 
+    description: 'Invalid playlist data or validation failed',
+  })
+  @ApiUnauthorizedResponse({ 
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
+  @ApiNotFoundResponse({ 
+    description: 'Playlist not found',
+  })
   updatePlaylist(@Param('id') id: string, @Body() body: UpdatePlaylistBodyDTO) {
-    return this.playlistService.updatePlaylist(Number(id), body)
+    try {
+      this.logger.log(`Update playlist ID: ${id}`)
+      const result = this.playlistService.updatePlaylist(Number(id), body)
+      this.logger.log(`Playlist updated successfully ID: ${id}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to update playlist ID: ${id}`, error.stack)
+      throw error
+    }
   }
 
   @Delete(':id')
   @Auth([AuthType.Bearer])
+  @HttpCode(HttpStatus.OK)
   @ZodSerializerDto(MessageResDTO)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Delete playlist',
-    description: 'Delete a playlist and all its tracks',
+    description: 'Soft delete a playlist and all its track associations. Playlist will be marked as deleted. Requires authentication and ownership.',
   })
-  @ApiParam({ name: 'id', type: String, description: 'Playlist ID' })
-  @ApiResponse({ status: 200, description: 'Playlist deleted successfully', type: MessageResDTO })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Playlist not found' })
+  @ApiParam({ name: 'id', type: String, description: 'Playlist ID to delete' })
+  @ApiOkResponse({ 
+    description: 'Playlist deleted successfully', 
+    type: MessageResDTO,
+  })
+  @ApiUnauthorizedResponse({ 
+    description: 'Unauthorized - Invalid or missing JWT token',
+  })
+  @ApiNotFoundResponse({ 
+    description: 'Playlist not found',
+  })
   deletePlaylist(@Param('id') id: string) {
-    return this.playlistService.deletePlaylist(Number(id))
+    try {
+      this.logger.log(`Delete playlist ID: ${id}`)
+      const result = this.playlistService.deletePlaylist(Number(id))
+      this.logger.log(`Playlist deleted successfully ID: ${id}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to delete playlist ID: ${id}`, error.stack)
+      throw error
+    }
   }
 }

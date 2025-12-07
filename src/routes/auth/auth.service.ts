@@ -233,6 +233,29 @@ export class AuthService {
     return { message: 'Logout successfully' }
   }
 
+  async refreshToken(token: string) {
+    await this.tokenService.verifyRefreshToken(token)
+
+    const refreshToken = await this.authRepository.findUniqueRefreshTokenIncludeUserRole(token)
+
+    if (!refreshToken) {
+      throw RevokedRefreshTokenException
+    }
+
+    const { deviceId, user } = refreshToken
+
+    await this.authRepository.deleteRefreshToken(token)
+
+    const tokens = await this.generateTokens({
+      deviceId,
+      roleId: user.roleId,
+      userId: user.id,
+      roleName: user.role.name,
+    })
+
+    return tokens
+  }
+
   async forgotPassword(forgotPasswordBody: ForgotPasswordBodyType) {
     try {
       const user = await this.sharedUserRepo.findUnique({

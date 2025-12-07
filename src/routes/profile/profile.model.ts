@@ -18,7 +18,6 @@ export const UpdateProfileBodySchema = UserSchema.pick({
   })
 
 export const UpdateProfileResSchema = UserSchema.omit({
-  totpSecret: true,
   password: true,
 })
 
