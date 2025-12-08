@@ -1,8 +1,7 @@
-import { Body, Controller, Ip, Post, HttpCode, HttpStatus, Logger } from '@nestjs/common'
+import { Body, Controller, Ip, Post, HttpCode, HttpStatus, Logger, Get, Query, Res, Req } from '@nestjs/common'
 import { 
   ApiTags, 
   ApiOperation, 
-  ApiResponse, 
   ApiBody,
   ApiOkResponse,
   ApiCreatedResponse,
@@ -13,10 +12,12 @@ import {
   ApiBearerAuth,
   ApiTooManyRequestsResponse,
   ApiForbiddenResponse,
+  ApiQuery,
 } from '@nestjs/swagger'
 import { ZodSerializerDto } from 'nestjs-zod'
 import {
   ForgotPasswordBodyDTO,
+  GetGoogleLinkResDTO,
   LoginBodyDTO,
   LoginResDTO,
   LogoutBodyDTO,
@@ -27,16 +28,24 @@ import {
   SendOTPBodyDTO,
 } from 'src/routes/auth/auth.dto'
 import { AuthService } from 'src/routes/auth/auth.service'
+import { GoogleService } from 'src/routes/auth/google.service'
+import envConfig from 'src/shared/config'
 import { IsPublic } from 'src/shared/decorators/auth.decorator'
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator'
 import { MessageResDTO } from 'src/shared/dtos/response.dto'
+import { Response, Request } from 'express'
+import { FacebookService } from 'src/routes/auth/facebook.service'
 
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name)
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService, 
+    private readonly googleService: GoogleService,
+    private readonly facebookService: FacebookService
+  ) {}
 
   @Post('otp')
   @IsPublic()
@@ -273,4 +282,173 @@ export class AuthController {
       throw error
     }
   }
+
+  @Get('google-link')
+  @IsPublic()
+  @ZodSerializerDto(GetGoogleLinkResDTO)
+  @ApiOperation({
+    summary: 'Get Google OAuth login link',
+    description: 'Generate Google OAuth authentication URL with state parameter for security. Returns URL to redirect user for Google login.',
+  })
+  @ApiOkResponse({
+    description: 'Google OAuth URL generated successfully',
+    type: GetGoogleLinkResDTO,
+  })
+  @ApiBadRequestResponse({
+    description: 'Failed to generate Google OAuth link',
+  })
+  async getGoogleLink(@UserAgent() userAgent: string, @Ip() userIp: string) {
+    return await this.googleService.getGoogleLink({ userAgent, userIp })
+  }
+
+  @Get('google/callback')
+  @IsPublic()
+  @ApiOperation({
+    summary: 'Google OAuth callback handler',
+    description: 'Handle Google OAuth callback after user authorizes the application. Exchanges authorization code for tokens and redirects to client application with access and refresh tokens.',
+  })
+  @ApiQuery({
+    name: 'code',
+    required: true,
+    description: 'Authorization code from Google OAuth',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'state',
+    required: true,
+    description: 'State parameter for security verification',
+    type: String,
+  })
+  @ApiOkResponse({
+    description: 'Redirects to client application with accessToken and refreshToken in query parameters',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid authorization code or state parameter. Redirects to client with error message.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Google authentication failed. Redirects to client with error message.',
+  })
+  async googleCallback(@Query('code') code: string, @Query('state') state: string, @Res() res: Response) {
+    try {
+      const data = await this.googleService.googleCallBack({ code, state })
+
+      return res.redirect(
+        `${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?accessToken=${data.accessToken}&refreshToken=${data.refreshToken}`,
+      )
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Đã xảy ra lỗi khi đăng nhập bằng Google, vui lòng thử lại bằng cách khác'
+      return res.redirect(`${envConfig.GOOGLE_CLIENT_REDIRECT_URI}?errorMessage=${message}`)
+    }
+  }
+
+  @Get('facebook-link')
+  @IsPublic()
+  @ApiOperation({
+    summary: 'Get Facebook OAuth login link',
+    description: 'Generate Facebook OAuth authentication URL with state parameter for security. Returns URL to redirect user for Facebook login.',
+  })
+  @ApiOkResponse({
+    description: 'Facebook OAuth URL generated successfully. Returns JSON object with url property.',
+    schema: {
+      type: 'object',
+      properties: {
+        url: {
+          type: 'string',
+          description: 'Facebook OAuth authorization URL',
+        },
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Failed to generate Facebook OAuth link',
+  })
+  async getFacebookLink(
+    @UserAgent() userAgent: string,
+    @Ip() userIp: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const data = await this.facebookService.getFacebookLink({ userAgent, userIp })
+
+    return res.json({ url: data.url })
+  }
+  
+  @Get('facebook/callback')
+  @IsPublic()
+  @ApiOperation({
+    summary: 'Facebook OAuth callback handler',
+    description: 'Handle Facebook OAuth callback after user authorizes the application. Exchanges authorization code for tokens and redirects to client application with access and refresh tokens.',
+  })
+  @ApiQuery({
+    name: 'code',
+    required: false,
+    description: 'Authorization code from Facebook OAuth',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'state',
+    required: false,
+    description: 'State parameter for security verification',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'error',
+    required: false,
+    description: 'Error code if Facebook OAuth failed',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'error_description',
+    required: false,
+    description: 'Detailed error description if Facebook OAuth failed',
+    type: String,
+  })
+  @ApiOkResponse({
+    description: 'Redirects to client application with accessToken and refreshToken in query parameters',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid authorization code, missing required parameters, or Facebook OAuth error. Redirects to client with error message.',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Facebook authentication failed. Redirects to client with error message.',
+  })
+  async facebookCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Query('error') error: string,
+    @Query('error_description') errorDescription: string,
+    @Res() res: Response,
+  ) {
+    try {
+      if (error) {
+        console.error('Facebook OAuth error:', error, errorDescription)
+        return res.redirect(
+          `${envConfig.FACEBOOK_CLIENT_REDIRECT_URI}?errorMessage=${encodeURIComponent(errorDescription || error)}`,
+        )
+      }
+
+      if (!code || !state) {
+        return res.redirect(
+          `${envConfig.FACEBOOK_CLIENT_REDIRECT_URI}?errorMessage=${encodeURIComponent('Missing authorization code')}`,
+        )
+      }
+
+      const { accessToken, refreshToken } = await this.facebookService.facebookCallBack({
+        code,
+        state,
+      })
+  
+        const nextjsCallbackUrl = new URL(`${envConfig.FACEBOOK_CLIENT_REDIRECT_URI}`)
+        nextjsCallbackUrl.searchParams.set('accessToken', accessToken)
+        nextjsCallbackUrl.searchParams.set('refreshToken', refreshToken)
+  
+        return res.redirect(nextjsCallbackUrl.toString())
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Cannot login with Facebook, please try other methods'
+        return res.redirect(`${envConfig.FACEBOOK_CLIENT_REDIRECT_URI}?errorMessage=${message}`)
+      }
+    }
 }

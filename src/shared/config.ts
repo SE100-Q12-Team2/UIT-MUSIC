@@ -55,6 +55,13 @@ const ConfigSchema = z.object({
   REDIS_CLOUD_URL: z.string(),
   MEILI_HOST: z.string().default('http://localhost:7700'),
   MEILI_MASTER_KEY: z.string(),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  GOOGLE_CLIENT_REDIRECT_URI: z.string(),
+  FACEBOOK_APP_ID: z.string(),
+  FACEBOOK_APP_SECRET: z.string(),
+  FACEBOOK_OAUTH_REDIRECT_URI: z.string(),
+  FACEBOOK_CLIENT_REDIRECT_URI: z.string()
 })
 
 const parsed = ConfigSchema.safeParse(process.env)
