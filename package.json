@@ -25,7 +25,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:allure": "jest --coverage && npm run allure:generate",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report",
+    "allure:serve": "allure serve allure-results"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.910.0",
@@ -76,11 +80,14 @@
     "@types/ms": "^2.1.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
+    "allure-commandline": "^2.36.0",
+    "allure-js-commons": "^3.4.3",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
     "jest": "^30.0.0",
+    "jest-allure2-reporter": "^2.2.8",
     "prettier": "^3.4.2",
     "prisma": "^7.0.0",
     "react-email": "4.3.0",
@@ -97,17 +104,31 @@
     "moduleFileExtensions": [
       "js",
       "json",
-      "ts"
+      "ts",
+      "tsx"
     ],
-    "rootDir": "src",
+    "rootDir": "./",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)sx?$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.controller.ts",
+      "src/**/*.service.ts",
+      "!src/**/*.spec.ts",
+      "!src/**/*.module.ts"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/src/$1"
+    },
+    "modulePaths": [
+      "<rootDir>"
+    ],
+    "reporters": [
+      "default",
+      "jest-allure2-reporter"
+    ]
   }
 }
