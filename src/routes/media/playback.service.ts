@@ -4,17 +4,17 @@ import { createSign } from 'crypto'
 import { GetPlaybackQuery, GetPlaybackQueryType } from 'src/routes/media/media.model'
 import { PrismaService } from 'src/shared/services'
 import { toPublicUrlFromRendition } from 'src/shared/lib'
+import { AudioQuality, RenditionType } from '@prisma/client'
 
 type SignUrlParams = { url: string; expiresInSec: number }
 
 type Rendition = {
-  type: 'MP3' | 'HLS'
-  quality?: string | null
+  type: RenditionType
+  quality: AudioQuality | null
   mime: string
   bucket: string
   key: string
 }
-
 @Injectable()
 export class PlaybackService {
   constructor(private prisma: PrismaService) {}
@@ -58,37 +58,38 @@ export class PlaybackService {
    * Chọn rendition theo policy
    */
   private pickRendition(
-    rs: Rendition[],
-    quality: 'hls' | '320' | '128',
-  ): Rendition | undefined {
-    const POLICY: Record<
-      typeof quality,
-      { type: Rendition['type']; quality?: string }[]
-    > = {
-      hls: [
-        { type: 'HLS' },
-      ],
-      '320': [
-        { type: 'MP3', quality: '320kbps' },
-        { type: 'HLS' },
-      ],
-      '128': [
-        { type: 'MP3', quality: '128kbps' },
-        { type: 'HLS' },
-      ],
-    }
-
-    for (const rule of POLICY[quality]) {
-      const r = rs.find(
-        (x) =>
-          x.type === rule.type &&
-          (!rule.quality || x.quality === rule.quality),
-      )
-      if (r) return r
-    }
-
-    return undefined
+  rs: Rendition[],
+  quality: 'hls' | '320' | '128',
+): Rendition | undefined {
+  const POLICY: Record<
+    typeof quality,
+    { type: Rendition['type']; quality?: AudioQuality }[]
+  > = {
+    hls: [
+      { type: 'HLS' },
+    ],
+    '320': [
+      { type: 'MP3', quality: 'Q320kbps' },
+      { type: 'HLS' },
+    ],
+    '128': [
+      { type: 'MP3', quality: 'Q128kbps' },
+      { type: 'HLS' },
+    ],
   }
+
+  for (const rule of POLICY[quality]) {
+    const r = rs.find(
+      (x) =>
+        x.type === rule.type &&
+        (rule.quality == null || x.quality === rule.quality),
+    )
+    if (r) return r
+  }
+
+  return undefined
+}
+
 
   // ký URL CloudFront dạng canned policy
   private signUrl({ url, expiresInSec }: SignUrlParams) {
