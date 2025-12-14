@@ -41,7 +41,7 @@ enum AudioQuality {
   Q128kbps @map("Q128kbps")
   Q320kbps @map("Q320kbps")
   FLAC
-  Master
+  MASTER
 }
 
 enum ArtistRole {
