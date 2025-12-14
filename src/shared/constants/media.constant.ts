@@ -1,6 +1,11 @@
 import z from 'zod'
 
-export const AudioQualityEnum = z.enum(['128kbps', '320kbps', 'FLAC', 'Master'])
+export const AudioQualityEnum = z.enum([
+  'Q128kbps',
+  'Q320kbps',
+  'FLAC',
+  'MASTER',
+])
 export const RenditionTypeEnum = z.enum(['MP3', 'HLS'])
 
 export const ReviewMediaType = {

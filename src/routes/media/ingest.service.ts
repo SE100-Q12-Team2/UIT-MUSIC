@@ -8,6 +8,9 @@ export class IngestService {
   constructor(private prisma: PrismaService) {}
 
   async complete(body: IngestCompleteBodyType, token: string) {
+    console.log('HEADER TOKEN:', JSON.stringify(token))
+    console.log('ENV TOKEN:', JSON.stringify(envConfig.INGEST_TOKEN))
+
     if (token !== envConfig.INGEST_TOKEN) throw new UnauthorizedException('Bad token')
 
     let asset = await this.prisma.asset.findUnique({ where: { songId: body.songId } })

@@ -7,6 +7,14 @@ import { toPublicUrlFromRendition } from 'src/shared/lib'
 
 type SignUrlParams = { url: string; expiresInSec: number }
 
+type Rendition = {
+  type: 'MP3' | 'HLS'
+  quality?: string | null
+  mime: string
+  bucket: string
+  key: string
+}
+
 @Injectable()
 export class PlaybackService {
   constructor(private prisma: PrismaService) {}
@@ -19,36 +27,77 @@ export class PlaybackService {
       where: { id: songId },
       include: { asset: { include: { renditions: true } } },
     })
-    if (!song || !song.asset) return { ok: false, reason: 'not_found' }
 
-    const rs = song.asset.renditions
-    let r: (typeof rs)[number] | undefined
-
-    if (quality === '320') r = rs.find((x) => x.type === 'MP3' && x.quality === '320kbps')
-    if (!r && quality === '128') r = rs.find((x) => x.type === 'MP3' && x.quality === '128kbps')
-    if (!r && quality === 'hls') r = rs.find((x) => x.type === 'HLS')
-    if (!r) {
-      r =
-        rs.find((x) => x.type === 'HLS') ??
-        rs.find((x) => x.type === 'MP3' && x.quality === '320kbps') ??
-        rs.find((x) => x.type === 'MP3' && x.quality === '128kbps') ??
-        undefined
+    if (!song || !song.asset) {
+      return { ok: false, reason: 'not_found' }
     }
 
-    if (!r) return { ok: false, reason: 'no_rendition' }
+    const rs = song.asset.renditions as Rendition[]
 
-    const url = toPublicUrlFromRendition(r)
-    const finalUrl = env.CF_DOMAIN ? this.signUrl({ url, expiresInSec: 1800 }) : url
+    const rendition = this.pickRendition(rs, quality)
 
-    return { ok: true, url: finalUrl, type: r.type, mime: r.mime, quality: r.quality }
+    if (!rendition) {
+      return { ok: false, reason: 'no_rendition' }
+    }
+
+    const url = toPublicUrlFromRendition(rendition)
+    const finalUrl = env.CF_DOMAIN
+      ? this.signUrl({ url, expiresInSec: 1800 })
+      : url
+
+    return {
+      ok: true,
+      url: finalUrl,
+      type: rendition.type,
+      mime: rendition.mime,
+      quality: rendition.quality ?? null,
+    }
+  }
+
+  /**
+   * Chọn rendition theo policy
+   */
+  private pickRendition(
+    rs: Rendition[],
+    quality: 'hls' | '320' | '128',
+  ): Rendition | undefined {
+    const POLICY: Record<
+      typeof quality,
+      { type: Rendition['type']; quality?: string }[]
+    > = {
+      hls: [
+        { type: 'HLS' },
+      ],
+      '320': [
+        { type: 'MP3', quality: '320kbps' },
+        { type: 'HLS' },
+      ],
+      '128': [
+        { type: 'MP3', quality: '128kbps' },
+        { type: 'HLS' },
+      ],
+    }
+
+    for (const rule of POLICY[quality]) {
+      const r = rs.find(
+        (x) =>
+          x.type === rule.type &&
+          (!rule.quality || x.quality === rule.quality),
+      )
+      if (r) return r
+    }
+
+    return undefined
   }
 
   // ký URL CloudFront dạng canned policy
-  signUrl({ url, expiresInSec }: SignUrlParams) {
+  private signUrl({ url, expiresInSec }: SignUrlParams) {
     const expires = Math.floor(Date.now() / 1000) + expiresInSec
     const policy = `{"Statement":[{"Resource":"${url}","Condition":{"DateLessThan":{"AWS:EpochTime":${expires}}}}]}`
+
     const signer = createSign('RSA-SHA1')
     signer.update(policy)
+
     const signature = signer
       .sign(env.CF_PRIVATE_KEY)
       .toString('base64')
@@ -56,8 +105,6 @@ export class PlaybackService {
       .replace(/=/g, '_')
       .replace(/\//g, '~')
 
-    const kp = env.CF_KEY_PAIR_ID
-    const signed = `${url}${url.includes('?') ? '&' : '?'}Expires=${expires}&Signature=${signature}&Key-Pair-Id=${kp}`
-    return signed
+    return `${url}${url.includes('?') ? '&' : '?'}Expires=${expires}&Signature=${signature}&Key-Pair-Id=${env.CF_KEY_PAIR_ID}`
   }
 }

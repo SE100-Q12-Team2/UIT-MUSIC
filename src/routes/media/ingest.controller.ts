@@ -18,6 +18,8 @@ export class IngestController {
   @ApiOkResponse({ description: 'Ingest processed successfully' })
   @ApiUnauthorizedResponse({ description: 'Invalid ingest token' })
   async complete(@Body(new ZodValidationPipe(IngestCompleteBodySchema)) body: IngestCompleteBodyType, @Headers('x-ingest-token') token: string) {
+    console.log('RENDITIONS:', body.renditions)
+    console.log('IS ARRAY:', Array.isArray(body.renditions))
     try {
       this.logger.log(`Ingest complete for song ${body.songId}`)
       const result = await this.ingestService.complete(body, token)

@@ -217,6 +217,8 @@ export const handler = async (event) => {
 
       console.log('Callback payload:', JSON.stringify(payload))
 
+      console.log('LAMBDA TOKEN:', JSON.stringify(process.env.INGEST_TOKEN))
+
       const res = await postWithRetry(process.env.INGEST_CALLBACK_URL, {
         method: 'POST',
         headers: {

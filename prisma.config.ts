@@ -8,7 +8,7 @@ export default {
     path: "prisma/migrations",
     seed: 'tsx prisma/seed.ts',
   },
-  datasource: { 
+  datasource: {
     url: env("DATABASE_URL") 
   }
 } satisfies PrismaConfig;
