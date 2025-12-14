@@ -1,17 +1,20 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
+import { IngestController } from 'src/routes/media/ingest.controller'
 import { IngestCompleteBodyType } from 'src/routes/media/media.model'
 import envConfig from 'src/shared/config'
 import { PrismaService } from 'src/shared/services'
 
 @Injectable()
 export class IngestService {
+  private readonly logger = new Logger(IngestController.name)
+  
   constructor(private prisma: PrismaService) {}
-
+  
   async complete(body: IngestCompleteBodyType, token: string) {
-    console.log('HEADER TOKEN:', JSON.stringify(token))
-    console.log('ENV TOKEN:', JSON.stringify(envConfig.INGEST_TOKEN))
+    this.logger.log('HEADER TOKEN:', JSON.stringify(token))
+    this.logger.log('ENV TOKEN:', JSON.stringify(envConfig.INGEST_TOKEN))
 
-    if (token !== envConfig.INGEST_TOKEN) throw new UnauthorizedException('Bad token')
+    if (token.trim() !== envConfig.INGEST_TOKEN.trim()) throw new UnauthorizedException('Bad token')
 
     let asset = await this.prisma.asset.findUnique({ where: { songId: body.songId } })
     if (!asset) {
