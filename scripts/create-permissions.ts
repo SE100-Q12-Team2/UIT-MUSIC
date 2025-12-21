@@ -16,31 +16,36 @@ const prisma = new PrismaService()
 
 const LABEL_MODULE = [
   'AUTH',
-  'MANAGE-PRODUCT',
   'PROFILE',
   'MEDIA',
-  'CART',
-  'ORDERS',
-  'REVIEWS',
+  'ALBUMS',
+  'SONGS',
   'ARTISTS',
   'PLAYLISTS',
-  'SEARCHS',
-  'SONGS',
-  'COPYRIGHT-REPORTS',
+  'COPYRIGHT',
+  'STATISTICS',
+  'ADVERTISEMENT',
+  'NOTIFICATION',
+  'GENRES',
+  'SEARCH',
 ]
 const LISTENER_MODULE = [
   'AUTH',
   'PROFILE',
   'MEDIA',
-  'CART',
-  'ORDERS',
-  'REVIEWS',
   'PLAYLISTS',
-  'ARTISTS',
+  'FAVORITES',
   'FOLLOWS',
-  'SEARCHS',
   'SONGS',
-  'COPYRIGHT-REPORTS',
+  'ALBUMS',
+  'ARTISTS',
+  'GENRES',
+  'SEARCH',
+  'SUBSCRIPTIONS',
+  'PAYMENTS',
+  'USERSONGRATING',
+  'LISTENINGHISTORY',
+  'NOTIFICATION',
 ]
 const VALID_HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'] as const
 type ValidHttpMethod = (typeof VALID_HTTP_METHODS)[number]
@@ -95,9 +100,13 @@ function extractExpressRoutes(app: NestExpressApplication): Route[] {
 }
 
 const updateRole = async (permissionIds: { id: number }[], roleName: string) => {
+  console.log('Tìm role:', roleName);
+
   const role = await prisma.role.findFirstOrThrow({
     where: { name: roleName, deletedAt: null },
   })
+  console.log('Kết quả:', role);
+  if (!role) throw new Error('Role not found: ' + roleName);
   await prisma.role.update({
     where: { id: role.id },
     data: { permissions: { set: permissionIds } },

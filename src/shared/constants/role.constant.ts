@@ -1,7 +1,7 @@
 export const Role = {
-  ADMIN: 'ADMIN',
-  LISTENER: 'LISTENER',
-  LABEL: 'LABEL',
+  ADMIN: 'Admin',
+  LISTENER: 'Listener',
+  LABEL: 'Label',
 } as const
 
 export const RoleId = {

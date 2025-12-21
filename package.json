@@ -19,6 +19,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "seed": "ts-node prisma/seed.ts",
+    "truncate-db": "ts-node scripts/truncate-db.ts",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
