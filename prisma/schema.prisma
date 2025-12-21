@@ -175,6 +175,7 @@ model User {
   deletedUsers User[] @relation("DeletorUsers")
 
   favorites    Favorite[] @relation("UserFavorites")
+  favoritePlaylists FavoritePlaylist[] @relation("UserFavoritePlaylists")
   follows      Follow[]   @relation("UserFollows")
 
   deletedAt DateTime?
@@ -350,6 +351,7 @@ model Playlist {
 
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   playlistSongs PlaylistSong[]
+  favoritedBy FavoritePlaylist[] @relation("PlaylistFavoritedBy")
 
   @@map("playlists")
 }
@@ -690,4 +692,17 @@ model SongContributor {
   label    RecordLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
 
   @@id([songId, labelId, role])
+}
+
+model FavoritePlaylist {
+  userId     Int      @map("user_id")
+  playlistId Int      @map("playlist_id")
+  favoritedAt DateTime @default(now()) @map("favorited_at")
+
+  user     User     @relation("UserFavoritePlaylists", fields: [userId], references: [id], onDelete: Cascade)
+  playlist Playlist @relation("PlaylistFavoritedBy", fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@id([userId, playlistId])
+  @@index([favoritedAt])
+  @@map("favorite_playlists")
 }

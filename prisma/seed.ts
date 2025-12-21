@@ -180,6 +180,7 @@ async function main() {
   }
 
   // ===== PLAYLISTS, PLAYLIST SONGS, FAVORITES, FOLLOWS =====
+  const allPlaylists: { id: number, userId: number }[] = [];
   for (const user of users) {
     // Playlist
     const playlist = await prisma.playlist.create({
@@ -189,6 +190,7 @@ async function main() {
         isPublic: true,
       },
     })
+    allPlaylists.push({ id: playlist.id, userId: user.id });
     // PlaylistSong
     const playlistSongs = faker.helpers.arrayElements(songs, 5)
     for (let i = 0; i < playlistSongs.length; i++) {
@@ -218,6 +220,21 @@ async function main() {
           targetId: label.id,
         },
       })
+    }
+  }
+
+  // ===== FAVORITE PLAYLISTS =====
+  for (const user of users) {
+    // Mỗi user sẽ thích 2-4 playlist ngẫu nhiên (không phải playlist của chính mình)
+    const otherPlaylists = allPlaylists.filter(p => p.userId !== user.id);
+    const favPlaylists = faker.helpers.arrayElements(otherPlaylists, faker.number.int({ min: 2, max: 4 }));
+    for (const pl of favPlaylists) {
+      await prisma.favoritePlaylist.create({
+        data: {
+          userId: user.id,
+          playlistId: pl.id,
+        },
+      });
     }
   }
 

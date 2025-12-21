@@ -46,6 +46,7 @@ const LISTENER_MODULE = [
   'USERSONGRATING',
   'LISTENINGHISTORY',
   'NOTIFICATION',
+  'FAVORITEPLAYLISTS',
 ]
 const VALID_HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'] as const
 type ValidHttpMethod = (typeof VALID_HTTP_METHODS)[number]
