@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "create-permissions": "ts-node scripts/create-permissions.ts",
+    "temp-create-permissions": "ts-node scripts/temp-create-permissions.ts",
     "init-role-user": "ts-node scripts/init-role-user.ts",
     "init-song": "ts-node scripts/init-song.ts",
     "prisma:generate": "prisma generate",

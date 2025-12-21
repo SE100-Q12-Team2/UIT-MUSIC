@@ -136,6 +136,9 @@ export class ListeningHistoryRepository {
       where: { id: { in: songIds } },
       include: {
         album: { select: { coverImage: true } },
+        playlistSongs: {
+          include: { playlist: true },
+        },
         contributors: {
           include: {
             label: {
@@ -155,6 +158,13 @@ export class ListeningHistoryRepository {
         songId: recent.songId,
         title: song?.title || '',
         coverImageUrl: song?.album?.coverImage || null,
+        playlist: song
+          ? song.playlistSongs.map((ps) => ({
+              id: ps.playlist.id,
+              name: ps.playlist.playlistName,
+            }))
+          : [],
+        duration: song?.duration || 0,
         lastPlayedAt: recent._max.playedAt!,
         playCount: recent._count.songId,
         artists:
@@ -246,13 +256,18 @@ export class ListeningHistoryRepository {
     history.forEach((h) => {
       if (h.song) {
         if (!songCount[h.song.id]) {
-          songCount[h.song.id] = { title: h.song.title, count: 0, duration: 0 };
+          songCount[h.song.id] = {
+            title: h.song.title,
+            count: 0,
+            duration: 0,
+          };
         }
         songCount[h.song.id].count++;
         songCount[h.song.id].duration += h.durationListened || 0;
       }
     });
-    const topSongs = Object.entries(songCount)
+    // Get top 10 song IDs
+    const topSongArr = Object.entries(songCount)
       .map(([id, data]) => ({
         songId: Number(id),
         songTitle: data.title,
@@ -261,6 +276,25 @@ export class ListeningHistoryRepository {
       }))
       .sort((a, b) => b.playCount - a.playCount)
       .slice(0, 10);
+
+    // Fetch coverImageUrl for top songs
+    let coverImageMap: Record<number, string | null> = {};
+    if (topSongArr.length > 0) {
+      const topSongIds = topSongArr.map(s => s.songId);
+      const topSongAlbums = await this.prismaService.song.findMany({
+        where: { id: { in: topSongIds } },
+        select: { id: true, album: { select: { coverImage: true } } },
+      });
+      coverImageMap = topSongAlbums.reduce((acc, s) => {
+        acc[s.id] = s.album?.coverImage || null;
+        return acc;
+      }, {} as Record<number, string | null>);
+    }
+
+    const topSongs = topSongArr.map(song => ({
+      ...song,
+      coverImageUrl: coverImageMap[song.songId] || null,
+    }));
 
     const hourCount: Record<number, number> = {};
     history.forEach((h) => {
