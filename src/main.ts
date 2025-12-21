@@ -3,7 +3,9 @@ import { AppModule } from './app.module'
 import { cleanupOpenApiDoc, ZodValidationPipe } from 'nestjs-zod'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { Logger } from '@nestjs/common'
+import { HttpException, Logger } from '@nestjs/common'
+import { ResponseInterceptor } from 'src/shared/interceptors/response.interceptors'
+import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filters'
 
 BigInt.prototype.toJSON = function () {
   const num = Number(this)
@@ -26,6 +28,9 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   })
+
+  app.useGlobalInterceptors(new ResponseInterceptor())
+  app.useGlobalFilters(new HttpExceptionFilter())
 
   app.use((req, res, next) => {
     try {
