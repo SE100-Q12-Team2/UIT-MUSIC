@@ -13,7 +13,7 @@ export class ProfileService {
   ) {}
 
   async getProfile(id: number) {
-    const profile = await this.shareUserRepo.findUniqueIncRolePermissions({ id })
+    const profile = await this.shareUserRepo.findUnique({ id })
 
     if (!profile) {
       throw NotFoundRecordException
