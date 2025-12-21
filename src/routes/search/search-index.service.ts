@@ -4,7 +4,6 @@ import {
   MeilisearchService,
   SongDocument,
   AlbumDocument,
-  ArtistDocument,
   PlaylistDocument,
 } from 'src/shared/services/meilisearch.service'
 
@@ -18,7 +17,7 @@ export class SearchIndexService {
   async indexAllData() {
     console.log('🔄 Starting full reindex...')
 
-    await Promise.all([this.indexAllSongs(), this.indexAllAlbums(), this.indexAllArtists(), this.indexAllPlaylists()])
+    await Promise.all([this.indexAllSongs(), this.indexAllAlbums()])
 
     console.log('✅ Full reindex completed!')
   }
@@ -28,13 +27,14 @@ export class SearchIndexService {
 
     const songs = await this.prisma.song.findMany({
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
-                profileImage: true,
+                labelName: true,
+                hasPublicProfile: true,
+                description: true,
               },
             },
           },
@@ -65,14 +65,18 @@ export class SearchIndexService {
       playCount: Number(song.playCount),
       uploadDate: song.uploadDate.getTime(),
       isActive: song.isActive,
-      artists: song.songArtists.map((sa) => sa.artist.artistName),
-      artistIds: song.songArtists.map((sa) => sa.artist.id),
+      contributors: song.contributors.map((c) => ({
+        labelId: c.label.id,
+        labelName: c.label.labelName,
+        role: c.role,
+        hasPublicProfile: c.label.hasPublicProfile,
+        description: c.label.description,
+      })),
       albumTitle: song.album?.albumTitle || null,
       albumId: song.album?.id || null,
       genreName: song.genre?.genreName || null,
       genreId: song.genre?.id || null,
       coverImage: song.album?.coverImage || null,
-      profileImages: song.songArtists.map((sa) => sa.artist.profileImage).filter((img): img is string => img !== null),
     }))
 
     const batchSize = 1000
@@ -115,73 +119,20 @@ export class SearchIndexService {
     console.log(`✅ Indexed ${albumDocuments.length} albums`)
   }
 
-  async indexAllArtists() {
-    console.log('🎤 Indexing artists...')
 
-    const artists = await this.prisma.artist.findMany({
-      include: {
-        _count: {
-          select: { songArtists: true },
-        },
-      },
-    })
-
-    const artistDocuments: ArtistDocument[] = artists.map((artist) => ({
-      id: artist.id,
-      artistName: artist.artistName,
-      biography: artist.biography,
-      profileImage: artist.profileImage,
-      hasPublicProfile: artist.hasPublicProfile,
-      songCount: artist._count.songArtists,
-    }))
-
-    await this.meili.indexArtists(artistDocuments)
-    console.log(`✅ Indexed ${artistDocuments.length} artists`)
-  }
-
-  async indexAllPlaylists() {
-    console.log('📝 Indexing playlists...')
-
-    const playlists = await this.prisma.playlist.findMany({
-      include: {
-        user: {
-          select: {
-            fullName: true,
-          },
-        },
-        _count: {
-          select: { playlistSongs: true },
-        },
-      },
-    })
-
-    const playlistDocuments: PlaylistDocument[] = playlists.map((playlist) => ({
-      id: playlist.id,
-      playlistName: playlist.playlistName,
-      description: playlist.description,
-      coverImageUrl: playlist.coverImageUrl,
-      tags: playlist.tags,
-      isPublic: playlist.isPublic,
-      userName: playlist.user.fullName,
-      trackCount: playlist._count.playlistSongs,
-      updatedAt: playlist.updatedAt.getTime(),
-    }))
-
-    await this.meili.indexPlaylists(playlistDocuments)
-    console.log(`✅ Indexed ${playlistDocuments.length} playlists`)
-  }
 
   async updateSongIndex(songId: number) {
     const song = await this.prisma.song.findUnique({
       where: { id: songId },
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
-                profileImage: true,
+                labelName: true,
+                hasPublicProfile: true,
+                description: true,
               },
             },
           },
@@ -217,111 +168,27 @@ export class SearchIndexService {
       playCount: Number(song.playCount),
       uploadDate: song.uploadDate.getTime(),
       isActive: song.isActive,
-      artists: song.songArtists.map((sa) => sa.artist.artistName),
-      artistIds: song.songArtists.map((sa) => sa.artist.id),
+      contributors: song.contributors.map((c) => ({
+        labelId: c.label.id,
+        labelName: c.label.labelName,
+        role: c.role,
+        hasPublicProfile: c.label.hasPublicProfile,
+        description: c.label.description,
+      })),
       albumTitle: song.album?.albumTitle || null,
       albumId: song.album?.id || null,
       genreName: song.genre?.genreName || null,
       genreId: song.genre?.id || null,
       coverImage: song.album?.coverImage || null,
-      profileImages: song.songArtists.map((sa) => sa.artist.profileImage).filter((img): img is string => img !== null),
     }
 
     await this.meili.indexSong(songDocument)
   }
 
-  async updateAlbumIndex(albumId: number) {
-    const album = await this.prisma.album.findUnique({
-      where: { id: albumId },
-      include: {
-        label: {
-          select: {
-            labelName: true,
-          },
-        },
-        _count: {
-          select: { songs: true },
-        },
-      },
-    })
 
-    if (!album) {
-      await this.meili.deleteAlbum(albumId)
-      return
-    }
 
-    const albumDocument: AlbumDocument = {
-      id: album.id,
-      albumTitle: album.albumTitle,
-      albumDescription: album.albumDescription,
-      coverImage: album.coverImage,
-      releaseDate: album.releaseDate?.getTime() || null,
-      labelName: album.label?.labelName || null,
-      totalTracks: album._count.songs,
-    }
 
-    await this.meili.indexAlbum(albumDocument)
-  }
 
-  async updateArtistIndex(artistId: number) {
-    const artist = await this.prisma.artist.findUnique({
-      where: { id: artistId },
-      include: {
-        _count: {
-          select: { songArtists: true },
-        },
-      },
-    })
 
-    if (!artist) {
-      await this.meili.deleteArtist(artistId)
-      return
-    }
 
-    const artistDocument: ArtistDocument = {
-      id: artist.id,
-      artistName: artist.artistName,
-      biography: artist.biography,
-      profileImage: artist.profileImage,
-      hasPublicProfile: artist.hasPublicProfile,
-      songCount: artist._count.songArtists,
-    }
-
-    await this.meili.indexArtist(artistDocument)
-  }
-
-  async updatePlaylistIndex(playlistId: number) {
-    const playlist = await this.prisma.playlist.findUnique({
-      where: { id: playlistId },
-      include: {
-        user: {
-          select: {
-            fullName: true,
-          },
-        },
-        _count: {
-          select: { playlistSongs: true },
-        },
-      },
-    })
-
-    if (!playlist) {
-      await this.meili.deletePlaylist(playlistId)
-      return
-    }
-
-    const playlistDocument: PlaylistDocument = {
-      id: playlist.id,
-      playlistName: playlist.playlistName,
-      description: playlist.description,
-      coverImageUrl: playlist.coverImageUrl,
-      tags: playlist.tags,
-      isPublic: playlist.isPublic,
-      userName: playlist.user.fullName,
-      trackCount: playlist._count.playlistSongs,
-      updatedAt: playlist.updatedAt.getTime(),
-    }
-
-    await this.meili.indexPlaylist(playlistDocument)
-  }
 }

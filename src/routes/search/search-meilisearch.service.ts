@@ -31,7 +31,7 @@ export class SearchMeilisearchService {
         }
       case SearchType.ARTISTS:
         return {
-          artists: await this.searchArtists(trimmedQuery, skip, limit),
+          artists: { items: [], total: 0, page: 1, limit, totalPages: 0 },
         }
       case SearchType.PLAYLISTS:
         return {
@@ -46,13 +46,13 @@ export class SearchMeilisearchService {
   private async searchAll(query: string, skip: number, limit: number, userId?: number) {
     const limitPerType = Math.ceil(limit / 4)
 
-    const [songs, albums, artists, playlists] = await Promise.all([
+    const [songs, albums, playlists] = await Promise.all([
       this.searchSongs(query, 0, limitPerType, userId),
       this.searchAlbums(query, 0, limitPerType),
-      this.searchArtists(query, 0, limitPerType),
       this.searchPlaylists(query, 0, limitPerType),
     ])
 
+    const artists = { items: [], total: 0, page: 1, limit: limitPerType, totalPages: 0 }
     return { songs, albums, artists, playlists }
   }
 
@@ -74,13 +74,14 @@ export class SearchMeilisearchService {
     const songs = await this.prisma.song.findMany({
       where: { id: { in: songIds } },
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
-                profileImage: true,
+                labelName: true,
+                hasPublicProfile: true,
+                description: true,
               },
             },
           },
@@ -98,12 +99,6 @@ export class SearchMeilisearchService {
             genreName: true,
           },
         },
-        ...(userId && {
-          favorites: {
-            where: { userId },
-            select: { userId: true },
-          },
-        }),
       },
     })
 
@@ -113,9 +108,27 @@ export class SearchMeilisearchService {
 
     return {
       items: sortedSongs.map((song) => ({
-        ...song,
-        isFavorite: userId ? song.favorites?.length > 0 : false,
-        favorites: undefined,
+        id: song.id,
+        title: song.title,
+        description: song.description,
+        lyrics: song.lyrics,
+        duration: song.duration,
+        language: song.language,
+        playCount: Number(song.playCount),
+        uploadDate: song.uploadDate.getTime(),
+        isActive: song.isActive,
+        contributors: song.contributors.map((c) => ({
+          labelId: c.label.id,
+          labelName: c.label.labelName,
+          role: c.role,
+          hasPublicProfile: c.label.hasPublicProfile,
+          description: c.label.description,
+        })),
+        albumTitle: song.album?.albumTitle || null,
+        albumId: song.album?.id || null,
+        genreName: song.genre?.genreName || null,
+        genreId: song.genre?.id || null,
+        coverImage: song.album?.coverImage || null,
       })),
       total: result.estimatedTotalHits || 0,
       page: Math.floor(skip / limit) + 1,
@@ -163,47 +176,7 @@ export class SearchMeilisearchService {
     }
   }
 
-  private async searchArtists(query: string, skip: number, limit: number) {
-    const result = await this.meili.searchArtists(query, { limit, offset: skip })
 
-    const artistIds = result.hits.map((hit) => hit.id)
-
-    if (artistIds.length === 0) {
-      return {
-        items: [],
-        total: 0,
-        page: Math.floor(skip / limit) + 1,
-        limit,
-        totalPages: 0,
-      }
-    }
-
-    const artists = await this.prisma.artist.findMany({
-      where: { id: { in: artistIds } },
-      include: {
-        _count: {
-          select: { songArtists: true },
-        },
-      },
-    })
-
-    const artistsWithFollowers = await Promise.all(
-      artists.map(async (artist) => {
-        const followerCount = await this.prisma.follow.count({
-          where: { targetType: 'Artist', targetId: artist.id },
-        })
-        return { ...artist, followerCount }
-      }),
-    )
-
-    return {
-      items: artistsWithFollowers,
-      total: result.estimatedTotalHits || 0,
-      page: Math.floor(skip / limit) + 1,
-      limit,
-      totalPages: Math.ceil((result.estimatedTotalHits || 0) / limit),
-    }
-  }
 
   private async searchPlaylists(query: string, skip: number, limit: number) {
     const result = await this.meili.searchPlaylists(query, { limit, offset: skip })
@@ -261,15 +234,6 @@ export class SearchMeilisearchService {
       select: {
         id: true,
         title: true,
-        songArtists: {
-          include: {
-            artist: {
-              select: {
-                artistName: true,
-              },
-            },
-          },
-        },
       },
     })
 
@@ -278,7 +242,6 @@ export class SearchMeilisearchService {
         id: song.id,
         text: song.title,
         type: 'song',
-        artists: song.songArtists.map((sa) => sa.artist.artistName),
       })),
     }
   }

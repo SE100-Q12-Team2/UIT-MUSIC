@@ -38,7 +38,7 @@ export const ListeningHistoryWithDetailsSchema = ListeningHistoryResponseSchema.
       z.object({
         id: z.number(),
         name: z.string(),
-        role: z.enum(['Main Artist', 'Featured Artist', 'Composer', 'Producer']),
+        role: z.string(),
       }),
     ),
   }),

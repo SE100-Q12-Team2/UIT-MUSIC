@@ -138,7 +138,7 @@ export class AlbumService {
     }
 
     // Detach all songs from this album before deleting
-    if (album._count && album._count.songs > 0) {
+    if ((album as any)._count && (album as any)._count.songs > 0) {
       await this.albumRepo.detachSongsFromAlbum(albumId)
     }
 

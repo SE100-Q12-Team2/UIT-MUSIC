@@ -38,17 +38,22 @@ enum TransactionStatus {
 }
 
 enum AudioQuality {
-  Q128kbps @map("Q128kbps")
-  Q320kbps @map("Q320kbps")
+  Q128kbps
+  Q320kbps 
   FLAC
   MASTER
 }
 
-enum ArtistRole {
-  MainArtist  @map("Main Artist")
-  FeaturedArtist @map("Featured Artist")
-  Composer
-  Producer
+enum ContributorRole {
+  MAIN
+  FEATURED
+  PRODUCER
+  COMPOSER
+}
+
+enum RecordLabelType {
+  INDIVIDUAL
+  COMPANY
 }
 
 enum CopyrightStatus {
@@ -69,10 +74,10 @@ enum AdType {
 }
 
 enum NotificationType {
-  SubscriptionExpiry @map("Subscription Expiry")
-  NewRelease @map("New Release")
-  SystemUpdate @map("System Update")
-  CopyrightNotice @map("Copyright Notice")
+  SubscriptionExpiry 
+  NewRelease
+  SystemUpdate
+  CopyrightNotice 
 }
 
 enum ReporterType {
@@ -84,7 +89,7 @@ enum ReporterType {
 
 enum ReportStatus {
   Pending
-  UnderReview @map("Under Review")
+  UnderReview
   Resolved
   Dismissed
 }
@@ -251,31 +256,28 @@ model Genre {
   @@map("genres")
 }
 
-model Artist {
-  id               Int      @id @default(autoincrement()) @map("artist_id")
-  artistName       String   @map("artist_name") @db.VarChar(255)
-  biography        String?
-  profileImage     String?  @map("profile_image") @db.VarChar(500)
-  hasPublicProfile Boolean  @default(true) @map("has_public_profile")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
-
-  songArtists SongArtist[]
-
-  @@map("artists")
-}
-
 model RecordLabel {
-  id               Int     @id @default(autoincrement()) @map("label_id")
-  userId           Int     @unique @map("user_id")
-  labelName        String  @map("label_name") @db.VarChar(255)
+  id               Int       @id @default(autoincrement()) @map("label_id")
+  userId           Int       @unique @map("user_id")
+
+  labelName        String    @map("label_name") @db.VarChar(255)
+  imageUrl        String?   @map("image_url") @db.VarChar(500)
+  labelType        RecordLabelType @default(INDIVIDUAL) @map("label_type")
+
   description      String?
-  website          String? @db.VarChar(255)
-  contactEmail     String? @map("contact_email") @db.VarChar(255)
-  hasPublicProfile Boolean @default(false) @map("has_public_profile")
+  website          String?   @db.VarChar(255)
+  contactEmail     String?   @map("contact_email") @db.VarChar(255)
+  hasPublicProfile Boolean   @default(false) @map("has_public_profile")
+
+  parentLabelId    Int?
+  parentLabel      RecordLabel? @relation("LabelHierarchy", fields: [parentLabelId], references: [id])
+  managedArtists   RecordLabel[] @relation("LabelHierarchy")
+  
+  contributions SongContributor[]
+
   createdAt        DateTime @default(now()) @map("created_at")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   albums Album[]
   songs  Song[]
 
@@ -314,11 +316,12 @@ model Song {
   copyrightStatus CopyrightStatus @default(Clear) @map("copyright_status")
   playCount       BigInt          @default(0) @map("play_count")
 
+  contributors    SongContributor[] 
+
   asset          Asset?   
   album            Album?             @relation(fields: [albumId], references: [id])
   genre            Genre?             @relation(fields: [genreId], references: [id])
   label            RecordLabel        @relation(fields: [labelId], references: [id])
-  songArtists      SongArtist[]
   playlistSongs    PlaylistSong[]
   listeningHistory ListeningHistory[]
   userRatings      UserSongRating[]
@@ -331,18 +334,6 @@ model Song {
   @@index([genreId, isActive])
   @@index([language])
   @@map("songs")
-}
-
-model SongArtist {
-  songId   Int        @map("song_id")
-  artistId Int        @map("artist_id")
-  role     ArtistRole @default(MainArtist)
-
-  song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
-  artist Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
-
-  @@id([songId, artistId])
-  @@map("song_artists")
 }
 
 model Playlist {
@@ -688,4 +679,15 @@ model Follow {
   @@index([targetType, targetId])
   @@index([userId])
   @@map("follows")
+}
+
+model SongContributor {
+  songId   Int
+  labelId  Int
+  role     ContributorRole
+
+  song     Song        @relation(fields: [songId], references: [id], onDelete: Cascade)
+  label    RecordLabel @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@id([songId, labelId, role])
 }

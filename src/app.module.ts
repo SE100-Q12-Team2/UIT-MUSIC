@@ -9,7 +9,6 @@ import { createKeyv } from '@keyv/redis'
 import { PlaylistModule } from 'src/routes/playlist/playlist.module'
 import { ProfileModule } from 'src/routes/profile/profile.module'
 import { PlaylistTracksModule } from 'src/routes/playlist-track/playlist-track.module'
-import { ArtistModule } from 'src/routes/artist/artist.module'
 import { FavoriteModule } from 'src/routes/favorite/favorite.module'
 import { FollowModule } from 'src/routes/follow/follow.module'
 import { SearchModule } from 'src/routes/search/search.module'
@@ -44,7 +43,6 @@ import { RecommendationModule } from 'src/routes/recommendation/recommendation.m
     PlaylistModule,
     ProfileModule,
     PlaylistTracksModule,
-    ArtistModule,
     GenreModule,
     SongModule,
     AlbumModule,

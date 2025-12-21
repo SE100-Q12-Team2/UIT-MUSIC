@@ -3,7 +3,7 @@ import { PrismaService } from '../services/prisma.service'
 
 export enum EntityType {
   ALBUM = 'album',
-  ARTIST = 'artist',
+  ARTIST = 'recordLabel',
   GENRE = 'genre',
   SONG = 'song',
   USER = 'user',
@@ -71,7 +71,7 @@ export class EntityExistsValidator {
   private getEntityDisplayName(entityType: EntityType): string {
     const displayNames: Record<EntityType, string> = {
       [EntityType.ALBUM]: 'Album',
-      [EntityType.ARTIST]: 'Artist',
+      [EntityType.ARTIST]: 'Record Label',
       [EntityType.GENRE]: 'Genre',
       [EntityType.SONG]: 'Song',
       [EntityType.USER]: 'User',

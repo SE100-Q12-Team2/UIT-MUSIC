@@ -61,7 +61,8 @@ const ConfigSchema = z.object({
   FACEBOOK_APP_ID: z.string(),
   FACEBOOK_APP_SECRET: z.string(),
   FACEBOOK_OAUTH_REDIRECT_URI: z.string(),
-  FACEBOOK_CLIENT_REDIRECT_URI: z.string()
+  FACEBOOK_CLIENT_REDIRECT_URI: z.string(),
+  DB_PASSWORD: z.string()
 })
 
 const parsed = ConfigSchema.safeParse(process.env)

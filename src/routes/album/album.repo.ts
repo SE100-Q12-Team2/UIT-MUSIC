@@ -47,25 +47,24 @@ export class AlbumRepository {
             hasPublicProfile: true,
           },
         },
-        ...(includeSongs && {
-          songs: {
-            where: { isActive: true },
-            orderBy: { uploadDate: 'asc' },
-            include: {
-              songArtists: {
-                include: {
-                  artist: {
-                    select: {
-                      id: true,
-                      artistName: true,
-                      profileImage: true,
+        songs: includeSongs
+          ? {
+              where: { isActive: true },
+              orderBy: { uploadDate: 'asc' },
+              include: {
+                contributors: {
+                  include: {
+                    label: {
+                      select: {
+                        id: true,
+                        labelName: true,
+                      },
                     },
                   },
                 },
               },
-            },
-          },
-        }),
+            }
+          : undefined,
         _count: {
           select: { songs: true },
         },

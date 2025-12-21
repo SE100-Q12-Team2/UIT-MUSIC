@@ -2,24 +2,30 @@ import { Injectable, OnModuleInit } from '@nestjs/common'
 import { MeiliSearch, Index } from 'meilisearch'
 import envConfig from 'src/shared/config'
 
+export interface ContributorDocument {
+  labelId: number;
+  labelName: string;
+  role: string;
+  hasPublicProfile: boolean;
+  description: string | null;
+}
+
 export interface SongDocument {
-  id: number
-  title: string
-  description: string | null
-  lyrics: string | null
-  duration: number
-  language: string | null
-  playCount: number
-  uploadDate: number 
-  isActive: boolean
-  artists: string[] 
-  artistIds: number[]
-  albumTitle: string | null
-  albumId: number | null
-  genreName: string | null
-  genreId: number | null
-  coverImage: string | null
-  profileImages: string[]
+  id: number;
+  title: string;
+  description: string | null;
+  lyrics: string | null;
+  duration: number;
+  language: string | null;
+  playCount: number;
+  uploadDate: number;
+  isActive: boolean;
+  contributors: ContributorDocument[];
+  albumTitle: string | null;
+  albumId: number | null;
+  genreName: string | null;
+  genreId: number | null;
+  coverImage: string | null;
 }
 
 export interface AlbumDocument {

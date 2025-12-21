@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { Prisma, ReporterType, ReportStatus } from '@prisma/client'
+import { Prisma, ReporterType, ReportStatus, ContributorRole } from '@prisma/client'
 import { QueryCopyrightReportsDto } from './copyright-report.model'
 import { CopyrightReportNotFoundException } from './copyright-report.error'
 
@@ -22,11 +22,12 @@ export class CopyrightReportRepository {
           select: {
             id: true,
             title: true,
-            songArtists: {
+            contributors: {
+              where: { role: ContributorRole.MAIN },
               select: {
-                artist: {
+                label: {
                   select: {
-                    artistName: true,
+                    labelName: true,
                   },
                 },
               },
@@ -56,6 +57,7 @@ export class CopyrightReportRepository {
       ...(reporterId && { reporterId }),
     }
 
+
     const [data, total] = await Promise.all([
       this.prisma.copyrightReport.findMany({
         where,
@@ -69,11 +71,12 @@ export class CopyrightReportRepository {
             select: {
               id: true,
               title: true,
-              songArtists: {
+              contributors: {
+                where: { role: ContributorRole.MAIN },
                 select: {
-                  artist: {
+                  label: {
                     select: {
-                      artistName: true,
+                      labelName: true,
                     },
                   },
                 },
@@ -95,11 +98,11 @@ export class CopyrightReportRepository {
 
     const transformedData = data.map((report) => ({
       ...report,
-      song: report.song
+      song: report.song && report.song.contributors
         ? {
             id: report.song.id,
             title: report.song.title,
-            artist: report.song.songArtists[0]?.artist.artistName,
+            artist: report.song.contributors[0]?.label.labelName,
           }
         : undefined,
     }))
@@ -123,11 +126,12 @@ export class CopyrightReportRepository {
           select: {
             id: true,
             title: true,
-            songArtists: {
+            contributors: {
+              where: { role: ContributorRole.MAIN },
               select: {
-                artist: {
+                label: {
                   select: {
-                    artistName: true,
+                    labelName: true,
                   },
                 },
               },
@@ -151,11 +155,11 @@ export class CopyrightReportRepository {
 
     return {
       ...report,
-      song: report.song
+      song: report.song && report.song.contributors
         ? {
             id: report.song.id,
             title: report.song.title,
-            artist: report.song.songArtists[0]?.artist.artistName,
+            artist: report.song.contributors[0]?.label.labelName,
           }
         : undefined,
     }
@@ -180,6 +184,7 @@ export class CopyrightReportRepository {
       reporterId: userId,
     }
 
+
     const [data, total] = await Promise.all([
       this.prisma.copyrightReport.findMany({
         where,
@@ -193,11 +198,12 @@ export class CopyrightReportRepository {
             select: {
               id: true,
               title: true,
-              songArtists: {
+              contributors: {
+                where: { role: ContributorRole.MAIN },
                 select: {
-                  artist: {
+                  label: {
                     select: {
-                      artistName: true,
+                      labelName: true,
                     },
                   },
                 },
@@ -212,11 +218,11 @@ export class CopyrightReportRepository {
 
     const transformedData = data.map((report) => ({
       ...report,
-      song: report.song
+      song: report.song && report.song.contributors
         ? {
             id: report.song.id,
             title: report.song.title,
-            artist: report.song.songArtists[0]?.artist.artistName,
+            artist: report.song.contributors[0]?.label.labelName,
           }
         : undefined,
       reporter: undefined, 
@@ -249,11 +255,12 @@ export class CopyrightReportRepository {
             select: {
               id: true,
               title: true,
-              songArtists: {
+              contributors: {
+                where: { role: ContributorRole.MAIN },
                 select: {
-                  artist: {
+                  label: {
                     select: {
-                      artistName: true,
+                      labelName: true,
                     },
                   },
                 },
