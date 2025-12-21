@@ -19,6 +19,14 @@ import { Decimal } from 'decimal.js'
 import { faker } from '@faker-js/faker'
 import { PrismaPg } from '@prisma/adapter-pg'
 
+/* ================= IMAGE HELPERS ================= */
+const image = {
+  avatar: () => `https://i.pravatar.cc/300?u=${faker.string.uuid()}`,
+  cover: () => `https://picsum.photos/seed/${faker.string.uuid()}/600/600`,
+  banner: () => `https://picsum.photos/seed/${faker.string.uuid()}/1200/400`,
+  playlist: () => `https://picsum.photos/seed/${faker.string.uuid()}/500/500`,
+}
+
 /* ================= INIT ================= */
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -70,6 +78,7 @@ async function main() {
       fullName: 'UIT Admin',
       gender: Gender.Other,
       roleId: roleAdmin.id,
+      profileImage: image.avatar(),
     },
   })
 
@@ -83,6 +92,7 @@ async function main() {
           fullName: faker.person.fullName(),
           gender: faker.helpers.arrayElement([Gender.Male, Gender.Female]),
           roleId: roleListener.id,
+          profileImage: image.avatar(),
         },
       }),
     ),
@@ -97,6 +107,7 @@ async function main() {
           password,
           fullName: faker.company.name(),
           roleId: roleLabel.id,
+          profileImage: image.avatar(),
         },
       })
       return prisma.recordLabel.create({
@@ -107,6 +118,8 @@ async function main() {
             RecordLabelType.INDIVIDUAL,
             RecordLabelType.COMPANY,
           ]),
+          imageUrl: image.cover(),
+          description: faker.lorem.paragraph(),
           hasPublicProfile: true,
         },
       })
@@ -132,6 +145,7 @@ async function main() {
           albumTitle: faker.music.songName(),
           labelId: label.id,
           releaseDate: faker.date.past(),
+          coverImage: image.cover()
         },
       });
       for (let j = 0; j < 2; j++) {
@@ -188,6 +202,7 @@ async function main() {
         userId: user.id,
         playlistName: `${user.fullName}'s Playlist`,
         isPublic: true,
+        coverImageUrl: image.playlist()
       },
     })
     allPlaylists.push({ id: playlist.id, userId: user.id });
@@ -447,7 +462,7 @@ async function main() {
         data: {
           adName: faker.company.catchPhrase(),
           adType: AdType.Banner,
-          filePath: faker.image.url(),
+          filePath: image.banner(),
           startDate: faker.date.past(),
           endDate: faker.date.future(),
         },
