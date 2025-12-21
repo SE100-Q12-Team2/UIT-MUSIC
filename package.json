@@ -9,7 +9,6 @@
     "create-permissions": "ts-node scripts/create-permissions.ts",
     "init-role-user": "ts-node scripts/init-role-user.ts",
     "init-song": "ts-node scripts/init-song.ts",
-    "init-seed": "ts-node scripts/seed.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
