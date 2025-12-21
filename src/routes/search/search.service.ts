@@ -72,10 +72,12 @@ export class SearchService {
         { description: { contains: query, mode: 'insensitive' } },
         { lyrics: { contains: query, mode: 'insensitive' } },
         {
-          songArtists: {
+          contributors: {
             some: {
-              artist: {
-                artistName: { contains: query, mode: 'insensitive' },
+              label: {
+                is: {
+                  labelName: { contains: query, mode: 'insensitive' },
+                },
               },
             },
           },
@@ -129,31 +131,31 @@ export class SearchService {
   }
 
   private async searchArtists(query: string, skip: number, limit: number) {
-    const searchConditions: Prisma.ArtistWhereInput = {
+    const searchConditions: Prisma.RecordLabelWhereInput = {
       hasPublicProfile: true,
       OR: [
-        { artistName: { contains: query, mode: 'insensitive' } },
-        { biography: { contains: query, mode: 'insensitive' } },
+        { labelName: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
       ],
     }
 
-    const [artists, total] = await Promise.all([
+    const [labels, total] = await Promise.all([
       this.searchRepo.findArtists(searchConditions, skip, limit),
       this.searchRepo.countArtists(searchConditions),
     ])
 
-    const artistsWithFollowers = await Promise.all(
-      artists.map(async (artist) => {
-        const followerCount = await this.searchRepo.countFollowers('Artist', artist.id)
+    const labelsWithFollowers = await Promise.all(
+      labels.map(async (label) => {
+        const followerCount = await this.searchRepo.countFollowers('Label', label.id)
         return {
-          ...artist,
+          ...label,
           followerCount,
         }
       }),
     )
 
     return {
-      items: artistsWithFollowers,
+      items: labelsWithFollowers,
       total,
       page: Math.floor(skip / limit) + 1,
       limit,
@@ -214,6 +216,7 @@ export class SearchService {
       }
     }
 
+
     const [songs, artists, albums] = await Promise.all([
       this.searchRepo.findSongSuggestions(searchQuery, Math.ceil(limit / 3)),
       this.searchRepo.findArtistSuggestions(searchQuery, Math.ceil(limit / 3)),
@@ -222,7 +225,7 @@ export class SearchService {
 
     const suggestions = [
       ...songs.map((s) => ({ type: 'song', id: s.id, text: s.title })),
-      ...artists.map((a) => ({ type: 'artist', id: a.id, text: a.artistName })),
+      ...artists.map((a) => ({ type: 'artist', id: a.id, text: a.labelName })),
       ...albums.map((a) => ({ type: 'album', id: a.id, text: a.albumTitle })),
     ].slice(0, limit)
 
@@ -239,7 +242,7 @@ export class SearchService {
         id: song.id,
         text: song.title,
         type: 'song',
-        artists: song.songArtists.map((sa) => sa.artist.artistName),
+        artists: song.contributors.map((c) => c.label.labelName),
       })),
     }
   }

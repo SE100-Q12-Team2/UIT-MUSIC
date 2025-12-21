@@ -28,11 +28,11 @@ export class UserSongRatingRepository {
                 coverImage: true,
               },
             },
-            songArtists: {
+            contributors: {
               select: {
-                artist: {
+                label: {
                   select: {
-                    artistName: true,
+                    labelName: true,
                   },
                 },
               },
@@ -65,11 +65,11 @@ export class UserSongRatingRepository {
                 coverImage: true,
               },
             },
-            songArtists: {
+            contributors: {
               select: {
-                artist: {
+                label: {
                   select: {
-                    artistName: true,
+                    labelName: true,
                   },
                 },
               },
@@ -112,11 +112,11 @@ export class UserSongRatingRepository {
                   coverImage: true,
                 },
               },
-              songArtists: {
+              contributors: {
                 select: {
-                  artist: {
+                  label: {
                     select: {
-                      artistName: true,
+                      labelName: true,
                     },
                   },
                 },
@@ -136,7 +136,7 @@ export class UserSongRatingRepository {
             id: rating.song.id,
             title: rating.song.title,
             duration: rating.song.duration,
-            artist: rating.song.songArtists[0]?.artist.artistName,
+            label: rating.song.contributors[0]?.label.labelName,
             album: rating.song.album,
           }
         : undefined,
@@ -182,11 +182,11 @@ export class UserSongRatingRepository {
                   coverImage: true,
                 },
               },
-              songArtists: {
+              contributors: {
                 select: {
-                  artist: {
+                  label: {
                     select: {
-                      artistName: true,
+                      labelName: true,
                     },
                   },
                 },
@@ -206,7 +206,7 @@ export class UserSongRatingRepository {
             id: rating.song.id,
             title: rating.song.title,
             duration: rating.song.duration,
-            artist: rating.song.songArtists[0]?.artist.artistName,
+            label: rating.song.contributors[0]?.label.labelName,
             album: rating.song.album,
           }
         : undefined,
@@ -249,11 +249,11 @@ export class UserSongRatingRepository {
                   coverImage: true,
                 },
               },
-              songArtists: {
+              contributors: {
                 select: {
-                  artist: {
+                  label: {
                     select: {
-                      artistName: true,
+                      labelName: true,
                     },
                   },
                 },

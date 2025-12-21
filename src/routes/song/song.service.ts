@@ -32,9 +32,9 @@ export class SongService {
       ...(labelId && { labelId }),
       ...(language && { language }),
       ...(artistId && {
-        songArtists: {
+        contributors: {
           some: {
-            artistId,
+            labelId: artistId,
           },
         },
       }),
@@ -93,8 +93,8 @@ export class SongService {
     await this.entityValidator.validateOptionalId(albumId, EntityType.ALBUM)
     await this.entityValidator.validateOptionalId(genreId, EntityType.GENRE)
 
-    const artistIds = artists.map((a) => a.artistId)
-    await this.entityValidator.validateMultipleIds(artistIds, EntityType.ARTIST, 'artists')
+    const contributorIds = artists.map((a) => a.artistId)
+    await this.entityValidator.validateMultipleIds(contributorIds, EntityType.RECORD_LABEL, 'contributors')
 
     const song = await this.songRepo.createSong({
       ...songData,
@@ -113,7 +113,9 @@ export class SongService {
       }),
     })
 
-    await this.songRepo.createSongArtistsFromAssignments(song.id, artists)
+    // Chuyển artists -> contributors cho repo
+    const contributors = artists.map((a) => ({ labelId: a.artistId, role: a.role }))
+    await this.songRepo.createSongContributorsFromAssignments(song.id, contributors)
 
     this.eventEmitter.emit(SEARCH_SYNC_EVENTS.SONG_CREATED, { songId: Number(song.id) })
 
@@ -171,15 +173,16 @@ export class SongService {
 
     const { artists } = data
 
-    const artistIds = artists.map((a) => a.artistId)
-    await this.entityValidator.validateMultipleIds(artistIds, EntityType.ARTIST, 'artists')
+    const contributorIds = artists.map((a) => a.artistId)
+    await this.entityValidator.validateMultipleIds(contributorIds, EntityType.RECORD_LABEL, 'contributors')
 
-    await this.songRepo.deleteSongArtists(songId)
-    await this.songRepo.createSongArtistsFromAssignments(songId, artists)
+    const contributors = artists.map((a) => ({ labelId: a.artistId, role: a.role }))
+    await this.songRepo.deleteSongContributors(songId)
+    await this.songRepo.createSongContributorsFromAssignments(songId, contributors)
 
     return {
       id: songId,
-      message: 'Song artists updated successfully',
+      message: 'Song contributors updated successfully',
     }
   }
 

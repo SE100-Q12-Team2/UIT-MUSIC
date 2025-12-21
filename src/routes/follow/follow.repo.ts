@@ -48,13 +48,14 @@ export class FollowRepository {
         let target: any = null
 
         if (follow.targetType === 'Artist') {
-          target = await this.prisma.artist.findUnique({
+          target = await this.prisma.recordLabel.findUnique({
             where: { id: follow.targetId },
             select: {
               id: true,
-              artistName: true,
-              biography: true,
-              profileImage: true,
+              labelName: true,
+              imageUrl: true,
+              description: true,
+              website: true,              
               hasPublicProfile: true,
             },
           })

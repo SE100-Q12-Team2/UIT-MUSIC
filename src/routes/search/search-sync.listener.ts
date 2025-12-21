@@ -61,7 +61,24 @@ export class SearchSyncListener {
   async handleAlbumCreated(payload: AlbumSyncPayload) {
     try {
       this.logger.log(`Indexing new album: ${payload.albumId}`)
-      await this.searchIndex.updateAlbumIndex(payload.albumId)
+      const album = await this.searchIndex['prisma'].album.findUnique({
+        where: { id: payload.albumId },
+        include: {
+          label: { select: { labelName: true } },
+          _count: { select: { songs: true } },
+        },
+      })
+      if (!album) return await this.meilisearch.deleteAlbum(payload.albumId)
+      const doc = {
+        id: album.id,
+        albumTitle: album.albumTitle,
+        albumDescription: album.albumDescription,
+        coverImage: album.coverImage,
+        releaseDate: album.releaseDate?.getTime() || null,
+        labelName: album.label?.labelName || null,
+        totalTracks: album._count.songs,
+      }
+      await this.meilisearch.indexAlbum(doc)
       this.logger.log(`Successfully indexed album: ${payload.albumId}`)
     } catch (error) {
       this.logger.error(`Failed to index album ${payload.albumId}:`, error)
@@ -70,13 +87,7 @@ export class SearchSyncListener {
 
   @OnEvent(SEARCH_SYNC_EVENTS.ALBUM_UPDATED)
   async handleAlbumUpdated(payload: AlbumSyncPayload) {
-    try {
-      this.logger.log(`Re-indexing updated album: ${payload.albumId}`)
-      await this.searchIndex.updateAlbumIndex(payload.albumId)
-      this.logger.log(`Successfully re-indexed album: ${payload.albumId}`)
-    } catch (error) {
-      this.logger.error(`Failed to re-index album ${payload.albumId}:`, error)
-    }
+    await this.handleAlbumCreated(payload)
   }
 
   @OnEvent(SEARCH_SYNC_EVENTS.ALBUM_DELETED)
@@ -95,23 +106,33 @@ export class SearchSyncListener {
   @OnEvent(SEARCH_SYNC_EVENTS.ARTIST_CREATED)
   async handleArtistCreated(payload: ArtistSyncPayload) {
     try {
-      this.logger.log(`Indexing new artist: ${payload.artistId}`)
-      await this.searchIndex.updateArtistIndex(payload.artistId)
-      this.logger.log(`Successfully indexed artist: ${payload.artistId}`)
+      this.logger.log(`Indexing new record label: ${payload.artistId}`)
+      const label = await this.searchIndex['prisma'].recordLabel.findUnique({
+        where: { id: payload.artistId },
+        include: {
+          user: { select: { fullName: true, profileImage: true } },
+          songs: { select: { id: true } },
+        },
+      })
+      if (!label) return await this.meilisearch.deleteArtist(payload.artistId)
+      const doc = {
+        id: label.id,
+        artistName: label.labelName,
+        biography: label.description,
+        profileImage: label.user?.profileImage || null,
+        hasPublicProfile: label.hasPublicProfile,
+        songCount: label.songs.length,
+      }
+      await this.meilisearch.indexArtist(doc)
+      this.logger.log(`Successfully indexed record label: ${payload.artistId}`)
     } catch (error) {
-      this.logger.error(`Failed to index artist ${payload.artistId}:`, error)
+      this.logger.error(`Failed to index record label ${payload.artistId}:`, error)
     }
   }
 
   @OnEvent(SEARCH_SYNC_EVENTS.ARTIST_UPDATED)
   async handleArtistUpdated(payload: ArtistSyncPayload) {
-    try {
-      this.logger.log(`Re-indexing updated artist: ${payload.artistId}`)
-      await this.searchIndex.updateArtistIndex(payload.artistId)
-      this.logger.log(`Successfully re-indexed artist: ${payload.artistId}`)
-    } catch (error) {
-      this.logger.error(`Failed to re-index artist ${payload.artistId}:`, error)
-    }
+    await this.handleArtistCreated(payload)
   }
 
   @OnEvent(SEARCH_SYNC_EVENTS.ARTIST_DELETED)
@@ -131,7 +152,26 @@ export class SearchSyncListener {
   async handlePlaylistCreated(payload: PlaylistSyncPayload) {
     try {
       this.logger.log(`Indexing new playlist: ${payload.playlistId}`)
-      await this.searchIndex.updatePlaylistIndex(payload.playlistId)
+      const playlist = await this.searchIndex['prisma'].playlist.findUnique({
+        where: { id: payload.playlistId },
+        include: {
+          user: { select: { fullName: true } },
+          _count: { select: { playlistSongs: true } },
+        },
+      })
+      if (!playlist) return await this.meilisearch.deletePlaylist(payload.playlistId)
+      const doc = {
+        id: playlist.id,
+        playlistName: playlist.playlistName,
+        description: playlist.description,
+        coverImageUrl: playlist.coverImageUrl,
+        tags: playlist.tags,
+        isPublic: playlist.isPublic,
+        userName: playlist.user?.fullName || '',
+        trackCount: playlist._count.playlistSongs,
+        updatedAt: playlist.updatedAt.getTime(),
+      }
+      await this.meilisearch.indexPlaylist(doc)
       this.logger.log(`Successfully indexed playlist: ${payload.playlistId}`)
     } catch (error) {
       this.logger.error(`Failed to index playlist ${payload.playlistId}:`, error)
@@ -140,13 +180,7 @@ export class SearchSyncListener {
 
   @OnEvent(SEARCH_SYNC_EVENTS.PLAYLIST_UPDATED)
   async handlePlaylistUpdated(payload: PlaylistSyncPayload) {
-    try {
-      this.logger.log(`Re-indexing updated playlist: ${payload.playlistId}`)
-      await this.searchIndex.updatePlaylistIndex(payload.playlistId)
-      this.logger.log(`Successfully re-indexed playlist: ${payload.playlistId}`)
-    } catch (error) {
-      this.logger.error(`Failed to re-index playlist ${payload.playlistId}:`, error)
-    }
+    await this.handlePlaylistCreated(payload)
   }
 
   @OnEvent(SEARCH_SYNC_EVENTS.PLAYLIST_DELETED)

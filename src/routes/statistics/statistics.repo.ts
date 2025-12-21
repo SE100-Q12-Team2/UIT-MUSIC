@@ -60,12 +60,12 @@ export class StatisticsRepository {
                 coverImage: true,
               },
             },
-            songArtists: {
+            contributors: {
               include: {
-                artist: {
+                label: {
                   select: {
                     id: true,
-                    artistName: true,
+                    labelName: true,
                   },
                 },
               },
@@ -83,10 +83,10 @@ export class StatisticsRepository {
         title: ts.song.title,
         duration: ts.song.duration,
         coverImage: ts.song.album?.coverImage || null,
-        artists: ts.song.songArtists.map((sa) => ({
-          artistId: sa.artist.id,
-          artistName: sa.artist.artistName,
-          role: sa.role,
+        contributors: ts.song.contributors.map((c) => ({
+          labelId: c.label.id,
+          labelName: c.label.labelName,
+          role: c.role,
         })),
       },
     }))
@@ -264,7 +264,7 @@ export class StatisticsRepository {
       newUsersToday,
       totalSongs,
       totalAlbums,
-      totalArtists,
+      totalLabels,
       totalPlaylists,
       playsToday,
       playTimeToday,
@@ -291,7 +291,7 @@ export class StatisticsRepository {
 
       this.prisma.album.count(),
 
-      this.prisma.artist.count(),
+      this.prisma.recordLabel.count(),
 
       this.prisma.playlist.count(),
 
@@ -329,7 +329,7 @@ export class StatisticsRepository {
       content: {
         totalSongs,
         totalAlbums,
-        totalArtists,
+        totalLabels,
         totalPlaylists,
       },
       engagement: {

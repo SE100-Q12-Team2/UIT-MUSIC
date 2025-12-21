@@ -13,13 +13,13 @@ export class SearchRepository {
       take: limit,
       orderBy: [{ playCount: 'desc' }, { uploadDate: 'desc' }],
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
-                profileImage: true,
+                labelName: true,
+                imageUrl: true,
               },
             },
           },
@@ -75,22 +75,22 @@ export class SearchRepository {
     return this.prismaService.album.count({ where: conditions })
   }
 
-  async findArtists(conditions: Prisma.ArtistWhereInput, skip: number, limit: number) {
-    return this.prismaService.artist.findMany({
+  async findArtists(conditions: Prisma.RecordLabelWhereInput, skip: number, limit: number) {
+    return this.prismaService.recordLabel.findMany({
       where: conditions,
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
-          select: { songArtists: true },
+          select: { songs: true },
         },
       },
     })
   }
 
-  async countArtists(conditions: Prisma.ArtistWhereInput) {
-    return this.prismaService.artist.count({ where: conditions })
+  async countArtists(conditions: Prisma.RecordLabelWhereInput) {
+    return this.prismaService.recordLabel.count({ where: conditions })
   }
 
   async countFollowers(targetType: 'Artist' | 'Label', targetId: number) {
@@ -164,15 +164,15 @@ export class SearchRepository {
   }
 
   async findArtistSuggestions(query: string, limit: number) {
-    return this.prismaService.artist.findMany({
+    return this.prismaService.recordLabel.findMany({
       where: {
         hasPublicProfile: true,
-        artistName: { contains: query, mode: 'insensitive' },
+        labelName: { contains: query, mode: 'insensitive' },
       },
       take: limit,
       select: {
         id: true,
-        artistName: true,
+        labelName: true,
       },
     })
   }
@@ -199,11 +199,11 @@ export class SearchRepository {
       select: {
         id: true,
         title: true,
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
-                artistName: true,
+                labelName: true,
               },
             },
           },

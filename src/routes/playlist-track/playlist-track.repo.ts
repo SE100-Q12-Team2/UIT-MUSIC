@@ -56,20 +56,20 @@ export class PlaylistTracksRepository {
       songWhere.album = { albumTitle: { contains: q.albumTitle, mode: Prisma.QueryMode.insensitive } }
     }
 
-    // artist (qua SongArtist)
+    // record label (qua SongContributor)
     if (q.artistId || q.artistName) {
-      const songArtistCond: Prisma.SongArtistWhereInput = {}
+      const contributorCond: Prisma.SongContributorWhereInput = {}
       if (q.artistId) {
-        songArtistCond.artistId = q.artistId
+        contributorCond.labelId = q.artistId
       }
       if (q.artistName) {
-        songArtistCond.artist = {
+        contributorCond.label = {
           is: {
-            artistName: { contains: q.artistName, mode: Prisma.QueryMode.insensitive },
+            labelName: { contains: q.artistName, mode: Prisma.QueryMode.insensitive },
           },
         }
       }
-      songWhere.songArtists = { some: songArtistCond }
+      songWhere.contributors = { some: contributorCond }
     }
 
     // Chỉ gán nếu có điều kiện trên song
@@ -94,7 +94,7 @@ export class PlaylistTracksRepository {
               title: true,
               duration: true,
               album: { select: { id: true, albumTitle: true } },
-              songArtists: { select: { artist: { select: { id: true, artistName: true } } } },
+              contributors: { select: { label: { select: { id: true, labelName: true } } } },
             },
           },
         },

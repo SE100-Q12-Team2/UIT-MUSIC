@@ -77,7 +77,7 @@ export class RecommendationService {
     const scores: Map<number, RecommendationScore> = new Map()
 
     const preferredGenres = await this.getUserPreferredGenres(userId, listeningHistory)
-    const preferredArtists = await this.getUserPreferredArtists(userId, listeningHistory, favorites)
+    const preferredLabels = await this.getUserPreferredLabels(userId, listeningHistory, favorites)
 
     if (preferredGenres.length > 0) {
       const genreSongs = await this.recommendationRepo.findSongsByGenres(
@@ -97,25 +97,25 @@ export class RecommendationService {
       })
     }
 
-    if (preferredArtists.length > 0) {
-      const artistSongs = await this.recommendationRepo.findSongsByArtists(
-        preferredArtists.map((a) => a.artistId),
+    if (preferredLabels.length > 0) {
+      const labelSongs = await this.recommendationRepo.findSongsByLabels(
+        preferredLabels.map((a) => a.labelId),
         100,
       )
 
-      artistSongs.forEach((sa) => {
-        const artistPref = preferredArtists.find((a) => a.artistId === sa.artistId)
-        const score = (artistPref?.weight || 0) * 10
+      labelSongs.forEach((sa) => {
+        const labelPref = preferredLabels.find((a) => a.labelId === sa.labelId)
+        const score = (labelPref?.weight || 0) * 10
 
         const existing = scores.get(sa.songId)
         if (existing) {
           existing.score += score
-          existing.reasons.push('From artists you love')
+          existing.reasons.push('From record labels you love')
         } else {
           scores.set(sa.songId, {
             songId: sa.songId,
             score,
-            reasons: ['From artists you love'],
+            reasons: ['From record labels you love'],
           })
         }
       })
@@ -177,20 +177,20 @@ export class RecommendationService {
       })
     }
 
-    const artistIds = song.songArtists.map((sa) => sa.artistId)
-    if (artistIds.length > 0) {
-      const artistSongs = await this.recommendationRepo.findSongsByArtistIds(artistIds, songId, 30)
+    const labelIds = song.contributors.map((c) => c.labelId)
+    if (labelIds.length > 0) {
+      const labelSongs = await this.recommendationRepo.findSongsByLabelIds(labelIds, songId, 30)
 
-      artistSongs.forEach((sa) => {
+      labelSongs.forEach((sa) => {
         const existing = scores.get(sa.songId)
         if (existing) {
           existing.score += 8
-          existing.reasons.push('Same artist')
+          existing.reasons.push('Same record label')
         } else {
           scores.set(sa.songId, {
             songId: sa.songId,
             score: 8,
-            reasons: ['Same artist'],
+            reasons: ['Same record label'],
           })
         }
       })
@@ -237,16 +237,16 @@ export class RecommendationService {
       }))
   }
 
-  private async getUserPreferredArtists(userId: number, listeningHistory: any[], favorites: any[]) {
+  private async getUserPreferredLabels(userId: number, listeningHistory: any[], favorites: any[]) {
     const songIds = [...listeningHistory.map((h) => h.songId), ...favorites.map((f) => f.songId)]
 
     if (songIds.length === 0) return []
 
-    const artists = await this.recommendationRepo.getArtistPreferences(songIds)
+    const labels = await this.recommendationRepo.getLabelPreferences(songIds)
 
     const total = songIds.length
-    return artists.map((a) => ({
-      artistId: a.artistId,
+    return labels.map((a) => ({
+      labelId: a.labelId,
       weight: a._count.songId / total,
     }))
   }

@@ -19,13 +19,12 @@ export class SongRepository {
       take: limit,
       orderBy,
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
-                profileImage: true,
+                labelName: true,
               },
             },
           },
@@ -74,14 +73,12 @@ export class SongRepository {
     return this.prisma.song.findUnique({
       where: { id: songId },
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
-                profileImage: true,
-                biography: true,
+                labelName: true,
               },
             },
           },
@@ -127,12 +124,12 @@ export class SongRepository {
     return this.prisma.song.create({
       data,
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
+                labelName: true,
               },
             },
           },
@@ -169,20 +166,20 @@ export class SongRepository {
     })
   }
 
-  async createSongArtistsFromAssignments(songId: number, artists: Array<{ artistId: number; role: string }>) {
-    const songArtists = artists.map((artist) => ({
+  async createSongContributorsFromAssignments(songId: number, contributors: Array<{ labelId: number; role: string }>) {
+    const songContributors = contributors.map((contributor) => ({
       songId,
-      artistId: artist.artistId,
-      role: artist.role as any,
+      labelId: contributor.labelId,
+      role: contributor.role as any,
     }))
 
-    return this.prisma.songArtist.createMany({
-      data: songArtists,
+    return this.prisma.songContributor.createMany({
+      data: songContributors,
     })
   }
 
-  async deleteSongArtists(songId: number) {
-    return this.prisma.songArtist.deleteMany({
+  async deleteSongContributors(songId: number) {
+    return this.prisma.songContributor.deleteMany({
       where: { songId },
     })
   }
@@ -198,13 +195,12 @@ export class SongRepository {
       take: limit,
       orderBy: { playCount: 'desc' },
       include: {
-        songArtists: {
+        contributors: {
           include: {
-            artist: {
+            label: {
               select: {
                 id: true,
-                artistName: true,
-                profileImage: true,
+                labelName: true,
               },
             },
           },

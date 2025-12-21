@@ -67,9 +67,9 @@ export class RecommendationRepository {
     })
   }
 
-  async getArtistPreferences(songIds: number[]) {
-    return this.prisma.songArtist.groupBy({
-      by: ['artistId'],
+  async getLabelPreferences(songIds: number[]) {
+    return this.prisma.songContributor.groupBy({
+      by: ['labelId'],
       where: { songId: { in: songIds } },
       _count: { songId: true },
       orderBy: { _count: { songId: 'desc' } },
@@ -88,12 +88,12 @@ export class RecommendationRepository {
     })
   }
 
-  async findSongsByArtists(artistIds: number[], limit: number = 100) {
-    return this.prisma.songArtist.findMany({
+  async findSongsByLabels(labelIds: number[], limit: number = 100) {
+    return this.prisma.songContributor.findMany({
       where: {
-        artistId: { in: artistIds },
+        labelId: { in: labelIds },
       },
-      select: { songId: true, artistId: true },
+      select: { songId: true, labelId: true },
       take: limit,
     })
   }
@@ -111,7 +111,7 @@ export class RecommendationRepository {
     return this.prisma.song.findUnique({
       where: { id: songId },
       include: {
-        songArtists: { select: { artistId: true } },
+        contributors: { select: { labelId: true } },
         genre: true,
         album: true,
       },
@@ -130,10 +130,10 @@ export class RecommendationRepository {
     })
   }
 
-  async findSongsByArtistIds(artistIds: number[], excludeSongId: number, limit: number = 30) {
-    return this.prisma.songArtist.findMany({
+  async findSongsByLabelIds(labelIds: number[], excludeSongId: number, limit: number = 30) {
+    return this.prisma.songContributor.findMany({
       where: {
-        artistId: { in: artistIds },
+        labelId: { in: labelIds },
         songId: { not: excludeSongId },
       },
       select: { songId: true },
