@@ -1,17 +1,66 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { AddFavoriteBodyType, GetFavoritesQueryType } from 'src/routes/favorite/favorite.model'
 import { FavoriteRepository } from 'src/routes/favorite/favorite.repo'
+import { ListeningHistoryRepository } from 'src/routes/listening-history/listening-history.repo'
 import { SharedUserRepository } from 'src/shared/repository/shared-user.repo'
 
 @Injectable()
 export class FavoriteService {
   constructor(
     private readonly favoriteRepository: FavoriteRepository,
-    private readonly sharedUserRepo: SharedUserRepository
+    private readonly sharedUserRepo: SharedUserRepository,
+    private readonly listeningHistoryRepo: ListeningHistoryRepository,
   ) {}
 
   async getUserFavorites(query: GetFavoritesQueryType) {
     return await this.favoriteRepository.findAll(query)
+  }
+
+  async getHomeSummary(userId: number) {
+    const recentlyPlayed = await this.listeningHistoryRepo.getRecentlyPlayed(userId)
+
+    // Lấy topSongs (bài nghe nhiều nhất của user)
+    const topSongs = await this.favoriteRepository.findMany({
+      where: { userId },
+      select: {
+        song: {
+          select: {
+            id: true,
+            title: true,
+            album: { select: { coverImage: true } },
+            playCount: true,
+          },
+        },
+      },
+      orderBy: {
+        song: {
+          playCount: 'desc',
+        },
+      },
+      take: 1,
+    })
+
+    const favorites = await this.favoriteRepository.findMany({
+      where: { userId },
+      include: {
+        song: {
+          include: {
+            playlistSongs: {
+              include: {
+                playlist: true,
+              },
+            },
+          },
+        },
+      },
+      take: 5,
+    })
+
+    return {
+      recentlyPlayed,
+      topSongs,
+      favorites,
+    }
   }
 
   async checkFavorite(userId: number, songId: number) {
@@ -23,10 +72,10 @@ export class FavoriteService {
       id: body.userId,
     })
 
-    if(!existingUser) {
+    if (!existingUser) {
       throw new NotFoundException(`User with ID ${body.userId} not found`)
     }
-    
+
     const existing = await this.favoriteRepository.findByUserAndSong(body.userId, body.songId)
 
     if (existing) {

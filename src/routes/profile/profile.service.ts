@@ -18,7 +18,10 @@ export class ProfileService {
     if (!profile) {
       throw NotFoundRecordException
     }
-    return profile
+
+    const { password, ...rest } = profile
+
+    return rest
   }
 
   async updateProfile({ userId, body }: { userId: number; body: UpdateProfileBodyType }) {

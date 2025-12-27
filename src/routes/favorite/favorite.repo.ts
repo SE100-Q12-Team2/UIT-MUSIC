@@ -54,15 +54,16 @@ export class FavoriteRepository {
           song: {
             select: {
               id: true,
+              genre: true,
               title: true,
               description: true,
               duration: true,
-              language: true,
-              albumId: true,
-              genreId: true,
-              uploadDate: true,
               playCount: true,
-              isActive: true,
+              playlistSongs: {
+                include: {
+                  playlist: true,
+                },
+              },
             },
           },
         },
@@ -88,6 +89,10 @@ export class FavoriteRepository {
       totalItems,
       limit,
     }
+  }
+
+  findMany(args: Prisma.FavoriteFindManyArgs) {
+    return this.prisma.favorite.findMany(args)
   }
 
   async findByUserAndSong(userId: number, songId: number) {

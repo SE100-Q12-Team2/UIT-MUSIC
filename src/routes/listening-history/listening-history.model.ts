@@ -24,14 +24,14 @@ export const ListeningHistoryResponseSchema = ListeningHistorySchema.extend({
 export const ListeningHistoryWithDetailsSchema = ListeningHistoryResponseSchema.extend({
   song: z.object({
     id: z.number(),
-    title: z.string(),
+    albumTitle: z.string(),
     duration: z.number(),
-    coverImageUrl: z.string().nullable(),
+    coverImage: z.string().nullable(),
     album: z
       .object({
         id: z.number(),
-        title: z.string(),
-        coverImageUrl: z.string().nullable(),
+        albumTitle: z.string(),
+        coverImage: z.string().nullable(),
       })
       .nullable(),
     artists: z.array(

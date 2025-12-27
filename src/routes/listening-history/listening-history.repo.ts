@@ -72,6 +72,11 @@ export class ListeningHistoryRepository {
                   },
                 },
               },
+              playlistSongs: {
+                include: {
+                  playlist: true,
+                }
+              }
             },
           },
         },
@@ -88,14 +93,14 @@ export class ListeningHistoryRepository {
       deviceInfo: item.deviceInfo,
       song: {
         id: item.song.id,
-        title: item.song.title,
+        albumTitle: item.song.title,
         duration: item.song.duration,
-        coverImageUrl: item.song.album?.coverImage || null,
+        coverImage: item.song.album?.coverImage || null,
         album: item.song.album
           ? {
               id: item.song.album.id,
-              title: item.song.album.albumTitle,
-              coverImageUrl: item.song.album.coverImage,
+              albumTitle: item.song.album.albumTitle,
+              coverImage: item.song.album.coverImage,
             }
           : null,
         contributors: item.song.contributors.map((c) => ({
@@ -137,7 +142,13 @@ export class ListeningHistoryRepository {
       include: {
         album: { select: { coverImage: true } },
         playlistSongs: {
-          include: { playlist: true },
+          include: { playlist: {
+            select: {
+              coverImageUrl: true,
+              id: true,
+              playlistName: true,
+            }
+          } },
         },
         contributors: {
           include: {
@@ -161,7 +172,8 @@ export class ListeningHistoryRepository {
         playlist: song
           ? song.playlistSongs.map((ps) => ({
               id: ps.playlist.id,
-              name: ps.playlist.playlistName,
+              playlistName: ps.playlist.playlistName,
+              coverImageUrl: ps.playlist.coverImageUrl,
             }))
           : [],
         duration: song?.duration || 0,

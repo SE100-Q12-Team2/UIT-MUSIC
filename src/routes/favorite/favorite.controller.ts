@@ -50,6 +50,28 @@ export class FavoriteController {
     }
   }
 
+   /**
+   * GET /favorites/home-summary?userId=1
+   */
+  @Get('home-summary')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get home summary',
+    description: 'Retrieve summary data for home page: recently played, top songs, favorites.'
+  })
+  @ApiQuery({ name: 'userId', required: true, type: Number, description: 'User ID to get home summary for' })
+  async getHomeSummary(@Query('userId', ParseIntPipe) userId: number) {
+    try {
+      this.logger.log(`Get home summary for user ${userId}`)
+      const result = await this.favoriteService.getHomeSummary(userId)
+      this.logger.log(`Home summary retrieved for user ${userId}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to get home summary for user ${userId}`, error.stack)
+      throw error
+    }
+  }
+
   /**
    * GET /favorites/check?userId=1&songId=123
    */

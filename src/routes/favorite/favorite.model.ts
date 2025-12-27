@@ -21,8 +21,8 @@ export const FavoriteSongInfoSchema = z.object({
 
 export const GetFavoritesQuerySchema = z.object({
   userId: z.string().optional(),
-  limit: z.string(),
-  page: z.string(),
+  limit: z.string().optional().default('10'),
+  page: z.string().optional().default('1'),
   sort: z.enum(['likedAt', 'title', 'playCount']).default('likedAt'),
   order: z.enum(['asc', 'desc']).default('desc'),
   genreId: z.string().optional(),
