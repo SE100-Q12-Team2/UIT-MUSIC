@@ -33,6 +33,7 @@ import { UserSongRatingModule } from 'src/routes/user-song-rating/user-song-rati
 import { DeviceModule } from 'src/routes/device/device.module'
 import { UserPreferenceModule } from 'src/routes/user-preference/user-preference.module'
 import { RecommendationModule } from 'src/routes/recommendation/recommendation.module'
+import { UploadModule } from 'src/routes/upload/upload.module'
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { RecommendationModule } from 'src/routes/recommendation/recommendation.m
     DeviceModule,
     UserPreferenceModule,
     RecommendationModule,
+    UploadModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {
