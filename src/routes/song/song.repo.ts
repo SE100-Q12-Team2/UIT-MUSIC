@@ -263,4 +263,18 @@ export class SongRepository {
     })
     return label ? Number(label.id) : null
   }
+
+  async countTracksByAlbumIds(albumIds: number[]) {
+    if (albumIds.length === 0) return []
+
+    return this.prisma.song.groupBy({
+      by: ['albumId'],
+      where: {
+        albumId: { in: albumIds },
+      },
+      _count: {
+        id: true,
+      },
+    })
+  }
 }

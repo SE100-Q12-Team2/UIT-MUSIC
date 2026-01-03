@@ -255,11 +255,25 @@ export class RecommendationService {
     const songIds = recommendations.map((r) => r.songId)
 
     const songs = await this.songRepo.findSongs({ id: { in: songIds } }, 0, songIds.length, [])
+    const albumIds = [...new Set(songs.map((s) => s.albumId).filter((id): id is number => !!id))]
+
+    const albumTrackCounts = await this.songRepo.countTracksByAlbumIds(albumIds)
+
+    const albumTrackMap = new Map<number, number>()
+    albumTrackCounts.forEach((a) => {
+      albumTrackMap.set(a.albumId!, a._count.id)
+    })
 
     return recommendations.map((rec) => {
       const song = songs.find((s) => s.id === rec.songId)
       return {
         ...song,
+        album: song?.album
+          ? {
+              ...song.album,
+              totalTracks: albumTrackMap.get(song.album.id) ?? 0,
+            }
+          : null,
         recommendationScore: rec.score,
         recommendationReasons: rec.reasons,
       }

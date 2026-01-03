@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiHeader, ApiOkResponse, ApiUnauthorizedRespons
 import { IngestService } from 'src/routes/media/ingest.service'
 import { IngestCompleteBodyType, IngestCompleteBodySchema } from 'src/routes/media/media.model'
 import { ZodValidationPipe } from 'nestjs-zod'
+import { IsPublic } from 'src/shared/decorators/auth.decorator'
 
 @ApiTags('Media Ingest')
 @Controller('internal/ingest')
@@ -11,6 +12,7 @@ export class IngestController {
 
   constructor(private ingestService: IngestService) {}
 
+  @IsPublic()
   @Post('complete')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Ingest complete callback', description: 'Internal webhook for media processing completion. Requires ingest token.' })

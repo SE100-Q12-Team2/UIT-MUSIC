@@ -40,6 +40,13 @@ export class PlaylistRepository {
         orderBy,
         take: limit,
         skip,
+        include: {
+          playlistSongs: {
+            include: {
+              song: true,
+            },
+          },
+        },
       }),
       this.prisma.playlist.count({ where }),
     ])
