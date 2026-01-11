@@ -60,6 +60,7 @@ enum CopyrightStatus {
   Clear
   Disputed
   Violation
+  Pending
 }
 
 enum Rating {
