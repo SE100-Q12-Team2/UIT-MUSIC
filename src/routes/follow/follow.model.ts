@@ -27,10 +27,21 @@ export const FollowLabelInfoSchema = z.object({
 })
 
 export const GetFollowsQuerySchema = z.object({
-  userId: z.string().optional(),
+  userId: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val, 10) : undefined)),
   targetType: z.enum(['Artist', 'Label']).optional(),
-  limit: z.number().int().min(1).max(100).default(20),
-  page: z.number().int().min(1).default(1),
+  limit: z
+    .string()
+    .optional()
+    .default('20')
+    .transform((val) => parseInt(val, 10)),
+  page: z
+    .string()
+    .optional()
+    .default('1')
+    .transform((val) => parseInt(val, 10)),
   sort: z.enum(['followedAt', 'name']).default('followedAt'),
   order: z.enum(['asc', 'desc']).default('desc'),
 })
