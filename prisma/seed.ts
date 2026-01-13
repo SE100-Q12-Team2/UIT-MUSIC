@@ -256,8 +256,48 @@ async function main() {
   // ===== SUBSCRIPTION PLANS, USER SUBSCRIPTIONS, TRANSACTIONS =====
   await prisma.subscriptionPlan.createMany({
     data: [
-      { planName: 'Free', durationMonths: 0, price: new Decimal(0) },
-      { planName: 'Premium Monthly', durationMonths: 1, price: new Decimal(59000) },
+      { 
+        planName: 'Monthly Subscription', 
+        durationMonths: 1, 
+        price: new Decimal(59000),
+        features: JSON.stringify({
+          feature: [
+            'Ad-free listening',
+            'Unlimited skips',
+            'High-quality audio',
+            'Offline downloads'
+          ]
+        })
+      },
+      { 
+        planName: 'Quarterly Subscription', 
+        durationMonths: 3, 
+        price: new Decimal(159000),
+        features: JSON.stringify({
+          feature: [
+            'Ad-free listening',
+            'Unlimited skips',
+            'High-quality audio',
+            'Offline downloads',
+            '10% discount vs monthly'
+          ]
+        })
+      },
+      { 
+        planName: 'Annual Subscription', 
+        durationMonths: 12, 
+        price: new Decimal(599000),
+        features: JSON.stringify({
+          feature: [
+            'Ad-free listening',
+            'Unlimited skips',
+            'Premium audio quality',
+            'Offline downloads',
+            '15% discount vs monthly',
+            'Priority support'
+          ]
+        })
+      },
     ],
   })
   const paidPlan = await prisma.subscriptionPlan.findFirstOrThrow({ where: { price: { gt: 0 } } })
