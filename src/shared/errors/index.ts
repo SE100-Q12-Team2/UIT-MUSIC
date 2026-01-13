@@ -14,7 +14,7 @@ export const FullNameMustHaveAtLeast1CharacterError = new UnprocessableEntityExc
 
 export const NotFoundRecordException = new NotFoundException('Error.NotFound')
 
-export const InvalidPasswordException = new UnprocessableEntityException('Error.InvalidPassword')
+export const InvalidPasswordException = new UnprocessableEntityException('Mật khẩu hiện tại không đúng')
 
 export const InvalidForeignKeyException = new BadRequestException('Error.InvalidForeignKey')
 

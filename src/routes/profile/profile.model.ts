@@ -21,13 +21,11 @@ export const UpdateProfileResSchema = UserSchema.omit({
   password: true,
 })
 
-export const ChangePasswordBodySchema = UserSchema.pick({
-  password: true,
+export const ChangePasswordBodySchema = z.object({
+  password: z.string().optional(),
+  newPassword: z.string().min(6).max(100),
+  confirmPassword: z.string().min(6).max(100),
 })
-  .extend({
-    newPassword: z.string().min(6).max(100),
-    confirmPassword: z.string().min(6).max(100),
-  })
   .strict()
   .superRefine(({ newPassword, confirmPassword }, ctx) => {
     if (confirmPassword !== newPassword) {

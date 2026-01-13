@@ -51,10 +51,13 @@ export class ProfileService {
         throw NotFoundRecordException
       }
 
-      const isPasswordMatch = await this.hashingService.compare(password, user.password)
+      // Only verify current password if provided
+      if (password && password.trim() !== '') {
+        const isPasswordMatch = await this.hashingService.compare(password, user.password)
 
-      if (!isPasswordMatch) {
-        throw InvalidPasswordException
+        if (!isPasswordMatch) {
+          throw InvalidPasswordException
+        }
       }
 
       const hashedPassword = await this.hashingService.hash(newPassword)
