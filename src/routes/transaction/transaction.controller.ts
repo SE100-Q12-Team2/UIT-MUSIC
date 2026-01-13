@@ -114,6 +114,56 @@ export class TransactionController {
     }
   }
 
+  @Get('webhook/test')
+  @Auth([AuthType.None])
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Test webhook endpoint', description: 'Test if webhook URL is accessible' })
+  async testWebhook() {
+    this.logger.log('Webhook test endpoint called')
+    return {
+      success: true,
+      message: 'Webhook endpoint is accessible',
+      timestamp: new Date().toISOString(),
+    }
+  }
+
+  @Post('webhook')
+  @Auth([AuthType.None])
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sepay webhook', description: 'Handle payment gateway webhook callback. Internal use only.' })
+  async handleSepayWebhook(
+    @Body() webhookData: SepayWebhookDto,
+    @Headers('authorization') authorization: string,
+    @Headers() headers: Record<string, string>,
+    @Res() res: Response,
+  ) {
+    try {
+      this.logger.log('=== SEPAY WEBHOOK RECEIVED ===')
+      this.logger.log(`Headers: ${JSON.stringify(headers)}`)
+      this.logger.log(`Authorization: ${authorization}`)
+      this.logger.log(`Webhook data: ${JSON.stringify(webhookData)}`)
+
+      // Extract API key from "api_key <KEY>" format
+      const apiKey = authorization?.replace('api_key ', '').trim()
+      
+      await this.transactionService.processSepayCallback(webhookData, apiKey)
+
+      this.logger.log('Webhook processed successfully')
+      return res.json({
+        success: true,
+        message: 'Webhook processed successfully',
+      })
+    } catch (error) {
+      const err = error as Error
+      this.logger.error('Failed to process webhook', err.stack)
+      this.logger.error(`Error details: ${err.message}`)
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        success: false,
+        message: err.message || 'Error processing webhook',
+      })
+    }
+  }
+
   @Get(':id')
   @Auth([AuthType.Bearer])
   @HttpCode(HttpStatus.OK)
@@ -157,29 +207,5 @@ export class TransactionController {
     }
   }
 
-  @Post('webhook')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Sepay webhook', description: 'Handle payment gateway webhook callback. Internal use only.' })
-  async handleSepayWebhook(
-    @Body() webhookData: SepayWebhookDto,
-    @Headers('x-sepay-signature') signature: string,
-    @Res() res: Response,
-  ) {
-    try {
-      this.logger.log('Processing Sepay webhook')
-      await this.transactionService.processSepayCallback(webhookData, signature)
 
-      return res.json({
-        success: true,
-        message: 'Webhook processed successfully',
-      })
-    } catch (error) {
-      const err = error as Error
-      this.logger.error('Failed to process webhook', err.stack)
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        success: false,
-        message: err.message || 'Error processing webhook',
-      })
-    }
-  }
 }

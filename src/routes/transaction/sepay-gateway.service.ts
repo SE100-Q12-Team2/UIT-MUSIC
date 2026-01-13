@@ -108,6 +108,23 @@ export class SepayGatewayService {
     }
   }
 
+  verifyApiKey(apiKey: string): boolean {
+    try {
+      if (!this.sepayApiKey) {
+        this.logger.warn('SePay API key not configured')
+        return false
+      }
+
+      const isValid = apiKey === this.sepayApiKey
+      this.logger.log(`SePay API key verification: ${isValid ? 'SUCCESS' : 'FAILED'}`)
+
+      return isValid
+    } catch (error) {
+      this.logger.error(`Error verifying SePay API key: ${error.message}`, error.stack)
+      return false
+    }
+  }
+
   processWebhook(webhookData: any): {
     txnRef: string
     amount: number

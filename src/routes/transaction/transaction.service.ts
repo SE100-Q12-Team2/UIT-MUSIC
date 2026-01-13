@@ -135,14 +135,16 @@ export class TransactionService {
     return this.repository.getStats()
   }
 
-  async processSepayCallback(webhookData: SepayWebhookDto, signature?: string) {
+  async processSepayCallback(webhookData: SepayWebhookDto, apiKey?: string) {
     try {
-      if (signature) {
-        const payload = JSON.stringify(webhookData)
-        const isValid = this.sepayGateway.verifyWebhookSignature(payload, signature)
+      if (apiKey) {
+        const isValid = this.sepayGateway.verifyApiKey(apiKey)
         if (!isValid) {
+          this.logger.error('Invalid SePay API key in webhook')
           throw InvalidSepaySignatureError()
         }
+      } else {
+        this.logger.warn('No API key provided in webhook request')
       }
 
       const result = this.sepayGateway.processWebhook(webhookData)
