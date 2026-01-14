@@ -43,4 +43,9 @@ export class SharedRoleRepository {
 
     return role.id
   }
+
+  async getLabelRoleId() {
+    const role = await this.getRole(Role.LABEL)
+    return role.id
+  }
 }

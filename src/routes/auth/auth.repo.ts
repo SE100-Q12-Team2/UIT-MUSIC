@@ -95,7 +95,7 @@ export class AuthRepository {
   }
 
   async createUser(
-    user: Omit<RegisterBodyType, 'confirmPassword' | 'code'> & Pick<UserType, 'roleId'>,
+    user: Omit<RegisterBodyType, 'confirmPassword' | 'code' | 'role' | 'labelType' | 'labelName'> & Pick<UserType, 'roleId'>,
   ): Promise<Omit<UserType, 'password'>> {
     const newUser = await this.prismaService.user.create({
       data: user,
@@ -110,6 +110,20 @@ export class AuthRepository {
       createdAt: newUser.createdAt.toISOString(),
       updatedAt: newUser.updatedAt.toISOString(),
     }
+  }
+
+  async createRecordLabel(data: { 
+    userId: number; 
+    labelName: string; 
+    labelType: 'INDIVIDUAL' | 'COMPANY' 
+  }) {
+    return await this.prismaService.recordLabel.create({
+      data: {
+        userId: data.userId,
+        labelName: data.labelName,
+        labelType: data.labelType,
+      },
+    })
   }
 
   async createDevice(

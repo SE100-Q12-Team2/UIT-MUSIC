@@ -145,7 +145,10 @@ export class AuthService {
         type: TypeOfVerificationCode.REGISTER,
       })
 
-      const listenerRoleId = await this.sharedRoleRepo.getClientRoleId()
+      const roleId = body.role === 'Label' 
+        ? await this.sharedRoleRepo.getLabelRoleId()
+        : await this.sharedRoleRepo.getClientRoleId()
+
       const hashedPassword = await this.hashingService.hash(body.password)
 
       const [user] = await Promise.all([
@@ -153,7 +156,7 @@ export class AuthService {
           email: body.email,
           fullName: body.fullName,
           password: hashedPassword,
-          roleId: listenerRoleId,
+          roleId,
         }),
         this.authRepository.deleteVerificationCode({
           email_type: {
@@ -162,6 +165,15 @@ export class AuthService {
           },
         }),
       ])
+
+      if (body.role === 'Label' && body.labelType && body.labelName) {
+        await this.authRepository.createRecordLabel({
+          userId: user.id,
+          labelName: body.labelName,
+          labelType: body.labelType,
+        })
+      }
+
       return user
     } catch (error) {
       if (isUniqueConstraintPrismaError(error)) {

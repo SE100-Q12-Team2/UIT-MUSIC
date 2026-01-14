@@ -36,10 +36,25 @@ export class RecordLabelRepository {
               fullName: true,
             },
           },
+          parentLabel: {
+            select: {
+              id: true,
+              labelName: true,
+              labelType: true,
+            },
+          },
+          managedArtists: {
+            select: {
+              id: true,
+              labelName: true,
+              imageUrl: true,
+            },
+          },
           _count: {
             select: {
               albums: true,
               songs: true,
+              managedArtists: true,
             },
           },
         },
@@ -70,10 +85,25 @@ export class RecordLabelRepository {
             fullName: true,
           },
         },
+        parentLabel: {
+          select: {
+            id: true,
+            labelName: true,
+            labelType: true,
+          },
+        },
+        managedArtists: {
+          select: {
+            id: true,
+            labelName: true,
+            imageUrl: true,
+          },
+        },
         _count: {
           select: {
             albums: true,
             songs: true,
+            managedArtists: true,
           },
         },
       },
@@ -109,10 +139,25 @@ export class RecordLabelRepository {
             fullName: true,
           },
         },
+        parentLabel: {
+          select: {
+            id: true,
+            labelName: true,
+            labelType: true,
+          },
+        },
+        managedArtists: {
+          select: {
+            id: true,
+            labelName: true,
+            imageUrl: true,
+          },
+        },
         _count: {
           select: {
             albums: true,
             songs: true,
+            managedArtists: true,
           },
         },
       },
@@ -145,13 +190,20 @@ export class RecordLabelRepository {
       throw new NotFoundException('User not found')
     }
 
-    const label = await this.prisma.recordLabel.create({
-      data: {
-        ...data,
-        user: {
-          connect: { id: userId },
-        },
+    const { parentLabelId, ...rest } = data
+    const createData: any = {
+      ...rest,
+      user: {
+        connect: { id: userId },
       },
+    }
+    
+    if (parentLabelId !== null && parentLabelId !== undefined) {
+      createData.parentLabelId = parentLabelId
+    }
+
+    const label = await this.prisma.recordLabel.create({
+      data: createData,
       include: {
         user: {
           select: {
@@ -160,10 +212,25 @@ export class RecordLabelRepository {
             fullName: true,
           },
         },
+        parentLabel: {
+          select: {
+            id: true,
+            labelName: true,
+            labelType: true,
+          },
+        },
+        managedArtists: {
+          select: {
+            id: true,
+            labelName: true,
+            imageUrl: true,
+          },
+        },
         _count: {
           select: {
             albums: true,
             songs: true,
+            managedArtists: true,
           },
         },
       },
@@ -182,9 +249,17 @@ export class RecordLabelRepository {
       throw new ForbiddenException('You do not have permission to update this record label')
     }
 
+    const updateData: any = { ...data }
+    if ('parentLabelId' in updateData && updateData.parentLabelId === null) {
+      updateData.parentLabelId = undefined
+    }
+    if ('imageUrl' in updateData && updateData.imageUrl === null) {
+      updateData.imageUrl = undefined
+    }
+
     const updatedLabel = await this.prisma.recordLabel.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         user: {
           select: {
@@ -193,10 +268,25 @@ export class RecordLabelRepository {
             fullName: true,
           },
         },
+        parentLabel: {
+          select: {
+            id: true,
+            labelName: true,
+            labelType: true,
+          },
+        },
+        managedArtists: {
+          select: {
+            id: true,
+            labelName: true,
+            imageUrl: true,
+          },
+        },
         _count: {
           select: {
             albums: true,
             songs: true,
+            managedArtists: true,
           },
         },
       },
@@ -226,6 +316,160 @@ export class RecordLabelRepository {
     return {
       id,
       message: 'Record label deleted successfully',
+    }
+  }
+
+  async getManagedArtists(companyId: number, query: { page: number; limit: number; search?: string }) {
+    const { page, limit, search } = query
+    const skip = (page - 1) * limit
+
+    const company = await this.prisma.recordLabel.findUnique({
+      where: { id: companyId },
+      select: { labelType: true },
+    })
+
+    if (!company) {
+      throw new NotFoundException(`Record label with ID ${companyId} not found`)
+    }
+
+    if (company.labelType !== 'COMPANY') {
+      throw new ForbiddenException('Only companies can have managed artists')
+    }
+
+    const conditions: Prisma.RecordLabelWhereInput = {
+      parentLabelId: companyId,
+      ...(search && {
+        OR: [
+          { labelName: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.recordLabel.findMany({
+        where: conditions,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              fullName: true,
+            },
+          },
+          _count: {
+            select: {
+              albums: true,
+              songs: true,
+            },
+          },
+        },
+      }),
+      this.prisma.recordLabel.count({ where: conditions }),
+    ])
+
+    return {
+      items: items.map((item) => ({
+        ...item,
+        createdAt: item.createdAt.toISOString(),
+      })),
+      total: Number(total),
+      page,
+      limit,
+      totalPages: Math.ceil(Number(total) / limit),
+    }
+  }
+
+  async addArtistToCompany(companyId: number, artistLabelId: number, userId: number) {
+    const company = await this.prisma.recordLabel.findUnique({
+      where: { id: companyId },
+      select: { userId: true, labelType: true },
+    })
+
+    if (!company) {
+      throw new NotFoundException(`Company with ID ${companyId} not found`)
+    }
+
+    if (company.userId !== userId) {
+      throw new ForbiddenException('You do not have permission to manage this company')
+    }
+
+    if (company.labelType !== 'COMPANY') {
+      throw new ForbiddenException('Only companies can manage artists')
+    }
+
+    const artist = await this.prisma.recordLabel.findUnique({
+      where: { id: artistLabelId },
+      select: { labelType: true, parentLabelId: true },
+    })
+
+    if (!artist) {
+      throw new NotFoundException(`Artist with ID ${artistLabelId} not found`)
+    }
+
+    if (artist.labelType !== 'INDIVIDUAL') {
+      throw new ForbiddenException('Can only manage individual artists')
+    }
+
+    if (artist.parentLabelId !== null) {
+      throw new ConflictException('Artist is already managed by another company')
+    }
+
+    await this.prisma.recordLabel.update({
+      where: { id: artistLabelId },
+      data: { parentLabelId: companyId },
+    })
+
+    return {
+      message: 'Artist added to company successfully',
+      companyId,
+      artistLabelId,
+    }
+  }
+
+  async removeArtistFromCompany(companyId: number, artistLabelId: number, userId: number) {
+    const company = await this.prisma.recordLabel.findUnique({
+      where: { id: companyId },
+      select: { userId: true, labelType: true },
+    })
+
+    if (!company) {
+      throw new NotFoundException(`Company with ID ${companyId} not found`)
+    }
+
+    if (company.userId !== userId) {
+      throw new ForbiddenException('You do not have permission to manage this company')
+    }
+
+    if (company.labelType !== 'COMPANY') {
+      throw new ForbiddenException('Only companies can manage artists')
+    }
+
+    const artist = await this.prisma.recordLabel.findUnique({
+      where: { id: artistLabelId },
+      select: { parentLabelId: true },
+    })
+
+    if (!artist) {
+      throw new NotFoundException(`Artist with ID ${artistLabelId} not found`)
+    }
+
+    if (artist.parentLabelId !== companyId) {
+      throw new ForbiddenException('Artist does not belong to this company')
+    }
+
+    await this.prisma.recordLabel.update({
+      where: { id: artistLabelId },
+      data: { parentLabelId: null },
+    })
+
+    return {
+      message: 'Artist removed from company successfully',
+      companyId,
+      artistLabelId,
     }
   }
 }

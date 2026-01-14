@@ -29,4 +29,16 @@ export class RecordLabelService {
   deleteRecordLabel(id: number, userId: number) {
     return this.recordRepository.delete(id, userId)
   }
+
+  getManagedArtists(companyId: number, query: { page: number; limit: number; search?: string }) {
+    return this.recordRepository.getManagedArtists(companyId, query)
+  }
+
+  addArtistToCompany(companyId: number, artistLabelId: number, userId: number) {
+    return this.recordRepository.addArtistToCompany(companyId, artistLabelId, userId)
+  }
+
+  removeArtistFromCompany(companyId: number, artistLabelId: number, userId: number) {
+    return this.recordRepository.removeArtistFromCompany(companyId, artistLabelId, userId)
+  }
 }

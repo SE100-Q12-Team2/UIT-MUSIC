@@ -1,11 +1,13 @@
 import { Controller, Get, Post, Put, Delete, Query, Param, Body, ParseIntPipe, HttpCode, HttpStatus, Logger } from '@nestjs/common'
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse } from '@nestjs/swagger'
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiParam, ApiBody, ApiOkResponse, ApiCreatedResponse, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiNotFoundResponse, ApiQuery } from '@nestjs/swagger'
 import {
   GetRecordLabelsQueryDto,
   CreateRecordLabelDto,
   UpdateRecordLabelDto,
   RecordLabelResponseDto,
   PaginatedRecordLabelsResponseDto,
+  GetManagedArtistsQueryDto,
+  AddArtistToCompanyDto,
 } from './record-label.dto'
 import { RecordLabelService } from './record-label.service'
 import { Auth } from 'src/shared/decorators/auth.decorator'
@@ -137,6 +139,93 @@ export class RecordLabelController {
       return result
     } catch (error) {
       this.logger.error(`Failed to delete record label ${id}`, error.stack)
+      throw error
+    }
+  }
+
+  @Auth([AuthType.Bearer])
+  @Get(':id/managed-artists')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ 
+    summary: 'Get managed artists', 
+    description: 'Get all artists managed by a company label. Only available for company labels.' 
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Company label ID' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page' })
+  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search by artist name' })
+  @ApiOkResponse({ description: 'Managed artists retrieved', type: PaginatedRecordLabelsResponseDto })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Company label not found' })
+  async getManagedArtists(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() query: GetManagedArtistsQueryDto,
+  ): Promise<PaginatedRecordLabelsResponseDto> {
+    try {
+      this.logger.log(`Get managed artists for company ${id}`)
+      return await this.recordLabelService.getManagedArtists(id, query)
+    } catch (error) {
+      this.logger.error(`Failed to get managed artists for company ${id}`, error.stack)
+      throw error
+    }
+  }
+
+  @Auth([AuthType.Bearer])
+  @Post(':id/managed-artists')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ 
+    summary: 'Add artist to company', 
+    description: 'Add an individual artist to be managed by a company. Requires company ownership.' 
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Company label ID' })
+  @ApiBody({ type: AddArtistToCompanyDto, description: 'Artist label ID to add' })
+  @ApiCreatedResponse({ description: 'Artist added to company' })
+  @ApiBadRequestResponse({ description: 'Invalid data or artist already managed' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Company or artist not found' })
+  async addArtistToCompany(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: AddArtistToCompanyDto,
+    @ActiveUser() user: AccessTokenPayloadReturn,
+  ) {
+    try {
+      this.logger.log(`Add artist ${body.artistLabelId} to company ${id} by user ${user.userId}`)
+      const result = await this.recordLabelService.addArtistToCompany(id, body.artistLabelId, user.userId)
+      this.logger.log(`Artist ${body.artistLabelId} added to company ${id}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to add artist to company ${id}`, error.stack)
+      throw error
+    }
+  }
+
+  @Auth([AuthType.Bearer])
+  @Delete(':id/managed-artists/:artistId')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ 
+    summary: 'Remove artist from company', 
+    description: 'Remove an artist from company management. Requires company ownership.' 
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Company label ID' })
+  @ApiParam({ name: 'artistId', type: Number, description: 'Artist label ID to remove' })
+  @ApiOkResponse({ description: 'Artist removed from company' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'Company or artist not found' })
+  async removeArtistFromCompany(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('artistId', ParseIntPipe) artistId: number,
+    @ActiveUser() user: AccessTokenPayloadReturn,
+  ) {
+    try {
+      this.logger.log(`Remove artist ${artistId} from company ${id} by user ${user.userId}`)
+      const result = await this.recordLabelService.removeArtistFromCompany(id, artistId, user.userId)
+      this.logger.log(`Artist ${artistId} removed from company ${id}`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to remove artist from company ${id}`, error.stack)
       throw error
     }
   }

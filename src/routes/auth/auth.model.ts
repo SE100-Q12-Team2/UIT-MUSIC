@@ -10,14 +10,31 @@ export const RegisterBodySchema = UserSchema.pick({
   .extend({
     confirmPassword: z.string().min(6).max(100),
     code: z.string().length(6),
+    role: z.enum(['Listener', 'Label']).default('Listener'),
+    labelType: z.enum(['INDIVIDUAL', 'COMPANY']).optional(),
+    labelName: z.string().min(1).max(255).optional().transform(val => val === '' ? undefined : val),
   })
   .strict()
-  .superRefine(({ confirmPassword, password }, ctx) => {
+  .superRefine(({ confirmPassword, password, role, labelType, labelName }, ctx) => {
     if (confirmPassword !== password) {
       ctx.addIssue({
         code: 'custom',
         message: 'Password and confirm password must match',
         path: ['confirmPassword'],
+      })
+    }
+    if (role === 'Label' && !labelType) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Label type is required when registering as a label',
+        path: ['labelType'],
+      })
+    }
+    if (role === 'Label' && !labelName) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Label name is required when registering as a label',
+        path: ['labelName'],
       })
     }
   })
