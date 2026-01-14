@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common'
 import { EventEmitter2 } from '@nestjs/event-emitter'
 import { SongRepository } from './song.repo'
-import { Prisma } from '@prisma/client'
+import { Prisma, ContributorRole } from '@prisma/client'
 import {
   GetSongsQueryType,
   GetTrendingSongsQueryType,
@@ -20,6 +20,16 @@ export class SongService {
     private readonly entityValidator: EntityExistsValidator,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  private mapRoleToContributorRole(role: string): ContributorRole {
+    const roleMap: Record<string, ContributorRole> = {
+      'MainArtist': ContributorRole.MAIN,
+      'FeaturedArtist': ContributorRole.FEATURED,
+      'Composer': ContributorRole.COMPOSER,
+      'Producer': ContributorRole.PRODUCER,
+    }
+    return roleMap[role] || ContributorRole.MAIN
+  }
 
   async getSongs(query: GetSongsQueryType, userId?: number) {
     const { page, limit, genreId, artistId, albumId, labelId, language, order } = query
@@ -113,8 +123,10 @@ export class SongService {
       }),
     })
 
-    // Chuyển artists -> contributors cho repo
-    const contributors = artists.map((a) => ({ labelId: a.artistId, role: a.role }))
+    const contributors = artists.map((a) => ({ 
+      labelId: a.artistId, 
+      role: this.mapRoleToContributorRole(a.role) 
+    }))
     await this.songRepo.createSongContributorsFromAssignments(song.id, contributors)
 
     this.eventEmitter.emit(SEARCH_SYNC_EVENTS.SONG_CREATED, { songId: Number(song.id) })
@@ -176,7 +188,10 @@ export class SongService {
     const contributorIds = artists.map((a) => a.artistId)
     await this.entityValidator.validateMultipleIds(contributorIds, EntityType.RECORD_LABEL, 'contributors')
 
-    const contributors = artists.map((a) => ({ labelId: a.artistId, role: a.role }))
+    const contributors = artists.map((a) => ({ 
+      labelId: a.artistId, 
+      role: this.mapRoleToContributorRole(a.role) 
+    }))
     await this.songRepo.deleteSongContributors(songId)
     await this.songRepo.createSongContributorsFromAssignments(songId, contributors)
 

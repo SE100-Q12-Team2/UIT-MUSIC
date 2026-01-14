@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'src/shared/services/prisma.service'
-import { Prisma } from '@prisma/client'
+import { Prisma, ContributorRole } from '@prisma/client'
 
 @Injectable()
 export class SongRepository {
@@ -166,11 +166,11 @@ export class SongRepository {
     })
   }
 
-  async createSongContributorsFromAssignments(songId: number, contributors: Array<{ labelId: number; role: string }>) {
+  async createSongContributorsFromAssignments(songId: number, contributors: Array<{ labelId: number; role: ContributorRole }>) {
     const songContributors = contributors.map((contributor) => ({
       songId,
       labelId: contributor.labelId,
-      role: contributor.role as any,
+      role: contributor.role,
     }))
 
     return this.prisma.songContributor.createMany({
