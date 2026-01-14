@@ -42,7 +42,17 @@ export class S3IngestService {
     const filename = `${variant}-${uid}.${ext}`
     parts.push(filename)
 
-    return parts.join('/')
+    const key = parts.join('/')
+    
+    console.log('🔑 Generated S3 key:', {
+      envName,
+      tenant,
+      resource: params.resource,
+      entityId: params.entityId,
+      key,
+    })
+
+    return key
   }
 
   async createPresignedPutUrl(key: string, contentType?: string, expires = 1800) {
@@ -71,6 +81,14 @@ export class S3IngestService {
     })
 
     const presignedUrl = await getSignedUrl(this.s3, cmd, { expiresIn })
+    const publicUrl = this.getPublicUrl(key)
+
+    console.log('🔗 Generated presigned URL:', {
+      bucket: env.S3_BUCKET_NAME,
+      key,
+      publicUrl,
+      contentType,
+    })
 
     return {
       presignedUrl,
@@ -79,7 +97,7 @@ export class S3IngestService {
       contentType,
       cacheControl,
       expiresIn,
-      publicUrl: this.getPublicUrl(key),
+      publicUrl,
     }
   }
 
@@ -121,9 +139,10 @@ export class S3IngestService {
   }
 
   getPublicUrl(key: string): string {
-    if (env.CF_DOMAIN) {
-      return `https://${env.CF_DOMAIN}/${encodeURI(key)}`
-    }
+    // Always return S3 direct URL for now (not CloudFront)
+    // if (env.CF_DOMAIN) {
+    //   return `https://${env.CF_DOMAIN}/${encodeURI(key)}`
+    // }
     return `https://${env.S3_BUCKET_NAME}.s3.${env.S3_REGION}.amazonaws.com/${encodeURI(key)}`
   }
 }
