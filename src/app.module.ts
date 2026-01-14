@@ -34,6 +34,7 @@ import { DeviceModule } from 'src/routes/device/device.module'
 import { UserPreferenceModule } from 'src/routes/user-preference/user-preference.module'
 import { RecommendationModule } from 'src/routes/recommendation/recommendation.module'
 import { UploadModule } from 'src/routes/upload/upload.module'
+import { ContactModule } from 'src/routes/contact/contact.module'
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { UploadModule } from 'src/routes/upload/upload.module'
     UserPreferenceModule,
     RecommendationModule,
     UploadModule,
+    ContactModule,
     CacheModule.register({
       isGlobal: true,
       useFactory: async () => {
