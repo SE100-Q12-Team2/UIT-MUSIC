@@ -16,31 +16,37 @@ export class UserSongRatingService {
       throw SongNotFoundException
     }
 
+    this.logger.log(`Rating data received: ${JSON.stringify(data)}`)
+    
     const existingRating = await this.repository.findByUserAndSong(userId, data.songId)
 
     let result
     if (existingRating) {
-      result = await this.repository.update(userId, data.songId, data.rating)
+      this.logger.log(`Updating existing rating with comment: "${data.comment}"`)
+      result = await this.repository.update(userId, data.songId, data.rating, data.comment)
       this.logger.log(`Updated rating for song ${data.songId} by user ${userId}: ${data.rating}`)
     } else {
+      this.logger.log(`Creating new rating with comment: "${data.comment}"`)
       result = await this.repository.create({
         userId,
         songId: data.songId,
         rating: data.rating,
+        comment: data.comment,
       })
       this.logger.log(`Created rating for song ${data.songId} by user ${userId}: ${data.rating}`)
     }
 
+    this.logger.log(`Result comment after save: "${result.comment}"`)
     return this.transformRating(result)
   }
 
   async updateRating(userId: number, songId: number, data: UpdateRatingDto) {
     const existingRating = await this.repository.findByUserAndSong(userId, songId)
     if (!existingRating) {
-      return this.createOrUpdateRating(userId, { songId, rating: data.rating })
+      return this.createOrUpdateRating(userId, { songId, rating: data.rating, comment: data.comment })
     }
 
-    const updated = await this.repository.update(userId, songId, data.rating)
+    const updated = await this.repository.update(userId, songId, data.rating, data.comment)
 
     this.logger.log(`Updated rating for song ${songId} by user ${userId} to ${data.rating}`)
 
@@ -78,6 +84,19 @@ export class UserSongRatingService {
     const result = await this.repository.findUserRatings(userId, query)
 
     this.logger.log(`Retrieved ${result.data.length} ratings for user ${userId}`)
+
+    return result
+  }
+
+  async getSongRatings(songId: number, query: QueryUserRatingsDto) {
+    const song = await this.repository.checkSongExists(songId)
+    if (!song) {
+      throw SongNotFoundException
+    }
+
+    const result = await this.repository.findSongRatings(songId, query)
+
+    this.logger.log(`Retrieved ${result.data.length} ratings for song ${songId}`)
 
     return result
   }

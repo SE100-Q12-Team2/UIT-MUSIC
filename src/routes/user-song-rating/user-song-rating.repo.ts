@@ -8,12 +8,13 @@ import { RatingNotFoundException } from './user-song-rating.error'
 export class UserSongRatingRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: { userId: number; songId: number; rating: Rating }) {
+  async create(data: { userId: number; songId: number; rating: Rating; comment?: string }) {
     return this.prisma.userSongRating.create({
       data: {
         userId: data.userId,
         songId: data.songId,
         rating: data.rating,
+        comment: data.comment,
       },
       include: {
         song: {
@@ -153,6 +154,48 @@ export class UserSongRatingRepository {
     }
   }
 
+  async findSongRatings(songId: number, query: QueryUserRatingsDto) {
+    const { page, limit, rating, sortBy, sortOrder } = query
+    const skip = (page - 1) * limit
+
+    const where: Prisma.UserSongRatingWhereInput = {
+      songId,
+      ...(rating && { rating }),
+    }
+
+    const orderBy: Prisma.UserSongRatingOrderByWithRelationInput =
+      sortBy === 'songTitle' ? { song: { title: sortOrder } } : { ratedAt: sortOrder }
+
+    const [data, total] = await Promise.all([
+      this.prisma.userSongRating.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              profileImage: true,
+            },
+          },
+        },
+      }),
+      this.prisma.userSongRating.count({ where }),
+    ])
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
+  }
+
   async findLikedSongs(userId: number, page: number = 1, limit: number = 20) {
     const skip = (page - 1) * limit
 
@@ -223,7 +266,7 @@ export class UserSongRatingRepository {
     }
   }
 
-  async update(userId: number, songId: number, rating: Rating) {
+  async update(userId: number, songId: number, rating: Rating, comment?: string) {
     try {
       return await this.prisma.userSongRating.update({
         where: {
@@ -234,6 +277,7 @@ export class UserSongRatingRepository {
         },
         data: {
           rating,
+          comment,
           ratedAt: new Date(),
         },
         include: {

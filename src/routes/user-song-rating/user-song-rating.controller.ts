@@ -36,6 +36,8 @@ export class UserSongRatingController {
   ): Promise<RatingResponseDto> {
     try {
       this.logger.log(`User ${userId} rating song ${songId}`)
+      this.logger.log(`Rating data:`, JSON.stringify(data))
+      this.logger.log(`Has comment: ${!!data.comment}, Comment: "${data.comment}"`)
       data.songId = songId
       return await this.ratingService.createOrUpdateRating(userId, data)
     } catch (error) {
@@ -137,6 +139,25 @@ export class UserSongRatingController {
       return await this.ratingService.getLikedSongs(userId, page, limit)
     } catch (error) {
       this.logger.error(`Failed to get liked songs`, error.stack)
+      throw error
+    }
+  }
+
+  @Get('songs/:songId/ratings')
+  @IsPublic()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get song ratings', description: 'Get all ratings for a song with user info. Public access.' })
+  @ApiParam({ name: 'songId', type: Number })
+  @ApiOkResponse({ description: 'Song ratings retrieved' })
+  async getSongRatings(
+    @Param('songId', ParseIntPipe) songId: number,
+    @Query() query: QueryUserRatingsDto,
+  ) {
+    try {
+      this.logger.log(`Get ratings for song ${songId}`)
+      return await this.ratingService.getSongRatings(songId, query)
+    } catch (error) {
+      this.logger.error(`Failed to get song ratings`, error.stack)
       throw error
     }
   }

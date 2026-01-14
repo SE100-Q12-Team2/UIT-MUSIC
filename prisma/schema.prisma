@@ -415,6 +415,7 @@ model UserSongRating {
   userId   Int      @map("user_id")
   songId   Int      @map("song_id")
   rating   Rating
+  comment  String?  @db.Text
   ratedAt  DateTime @default(now()) @map("rated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
