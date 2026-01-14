@@ -79,8 +79,14 @@ export class AlbumService {
       throw new ForbiddenException('Only record labels can create albums')
     }
 
+    const albumData: any = { ...data }
+    if (albumData.releaseDate) {
+      const date = new Date(albumData.releaseDate)
+      albumData.releaseDate = date.toISOString()
+    }
+
     const album = await this.albumRepo.createAlbum({
-      ...data,
+      ...albumData,
       label: {
         connect: { id: labelId },
       },
@@ -111,7 +117,14 @@ export class AlbumService {
       throw new ForbiddenException('You do not have permission to update this album')
     }
 
-    await this.albumRepo.updateAlbum(albumId, data)
+    // Convert releaseDate string to ISO DateTime if provided
+    const updateData: any = { ...data }
+    if (updateData.releaseDate && typeof updateData.releaseDate === 'string') {
+      const date = new Date(updateData.releaseDate)
+      updateData.releaseDate = date.toISOString()
+    }
+
+    await this.albumRepo.updateAlbum(albumId, updateData)
 
     this.eventEmitter.emit(SEARCH_SYNC_EVENTS.ALBUM_UPDATED, { albumId })
 
