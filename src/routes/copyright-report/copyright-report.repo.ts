@@ -9,7 +9,7 @@ export class CopyrightReportRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: { songId: number; reporterType: ReporterType; reporterId: number | null; reportReason: string }) {
-    return this.prisma.copyrightReport.create({
+    const report = await this.prisma.copyrightReport.create({
       data: {
         songId: data.songId,
         reporterType: data.reporterType,
@@ -44,6 +44,18 @@ export class CopyrightReportRepository {
         },
       },
     })
+
+    // Transform contributors to artist string to match response schema
+    return {
+      ...report,
+      song: report.song
+        ? {
+            id: report.song.id,
+            title: report.song.title,
+            artist: report.song.contributors[0]?.label.labelName || 'Unknown Artist',
+          }
+        : undefined,
+    }
   }
 
   async findAll(query: QueryCopyrightReportsDto) {
@@ -98,11 +110,11 @@ export class CopyrightReportRepository {
 
     const transformedData = data.map((report) => ({
       ...report,
-      song: report.song && report.song.contributors
+      song: report.song
         ? {
             id: report.song.id,
             title: report.song.title,
-            artist: report.song.contributors[0]?.label.labelName,
+            artist: report.song.contributors[0]?.label.labelName || 'Unknown Artist',
           }
         : undefined,
     }))
@@ -155,11 +167,11 @@ export class CopyrightReportRepository {
 
     return {
       ...report,
-      song: report.song && report.song.contributors
+      song: report.song
         ? {
             id: report.song.id,
             title: report.song.title,
-            artist: report.song.contributors[0]?.label.labelName,
+            artist: report.song.contributors[0]?.label.labelName || 'Unknown Artist',
           }
         : undefined,
     }
@@ -175,6 +187,22 @@ export class CopyrightReportRepository {
         },
       },
     })
+  }
+
+  async getReportedSongIdsByUser(userId: number): Promise<number[]> {
+    const reports = await this.prisma.copyrightReport.findMany({
+      where: {
+        reporterId: userId,
+        status: {
+          in: [ReportStatus.Pending, ReportStatus.UnderReview],
+        },
+      },
+      select: {
+        songId: true,
+      },
+    })
+
+    return reports.map((r) => r.songId)
   }
 
   async findUserReports(userId: number, page: number = 1, limit: number = 20) {
@@ -218,11 +246,11 @@ export class CopyrightReportRepository {
 
     const transformedData = data.map((report) => ({
       ...report,
-      song: report.song && report.song.contributors
+      song: report.song
         ? {
             id: report.song.id,
             title: report.song.title,
-            artist: report.song.contributors[0]?.label.labelName,
+            artist: report.song.contributors[0]?.label.labelName || 'Unknown Artist',
           }
         : undefined,
       reporter: undefined, 
@@ -247,7 +275,7 @@ export class CopyrightReportRepository {
         ...(status === ReportStatus.Resolved || status === ReportStatus.Dismissed ? { resolvedAt: new Date() } : {}),
       }
 
-      return await this.prisma.copyrightReport.update({
+      const report = await this.prisma.copyrightReport.update({
         where: { id },
         data: updateData,
         include: {
@@ -277,6 +305,72 @@ export class CopyrightReportRepository {
           },
         },
       })
+
+      // Transform contributors to artist string
+      return {
+        ...report,
+        song: report.song
+          ? {
+              id: report.song.id,
+              title: report.song.title,
+              artist: report.song.contributors[0]?.label.labelName || 'Unknown Artist',
+            }
+          : undefined,
+      }
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw CopyrightReportNotFoundException
+        }
+      }
+      throw error
+    }
+  }
+
+  async updateReportReason(id: number, reportReason: string) {
+    try {
+      const report = await this.prisma.copyrightReport.update({
+        where: { id },
+        data: { reportReason },
+        include: {
+          song: {
+            select: {
+              id: true,
+              title: true,
+              contributors: {
+                where: { role: ContributorRole.MAIN },
+                select: {
+                  label: {
+                    select: {
+                      labelName: true,
+                    },
+                  },
+                },
+                take: 1,
+              },
+            },
+          },
+          reporter: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            },
+          },
+        },
+      })
+
+      // Transform contributors to artist string
+      return {
+        ...report,
+        song: report.song
+          ? {
+              id: report.song.id,
+              title: report.song.title,
+              artist: report.song.contributors[0]?.label.labelName || 'Unknown Artist',
+            }
+          : undefined,
+      }
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {

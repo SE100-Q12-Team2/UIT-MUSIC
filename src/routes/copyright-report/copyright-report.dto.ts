@@ -3,6 +3,7 @@ import {
   CreateCopyrightReportSchema,
   UpdateReportStatusSchema,
   UpdateAdminNotesSchema,
+  UpdateReportReasonSchema,
   QueryCopyrightReportsSchema,
   CopyrightReportResponseSchema,
   CopyrightReportListResponseSchema,
@@ -12,6 +13,7 @@ import {
 export class CreateCopyrightReportDto extends createZodDto(CreateCopyrightReportSchema) {}
 export class UpdateReportStatusDto extends createZodDto(UpdateReportStatusSchema) {}
 export class UpdateAdminNotesDto extends createZodDto(UpdateAdminNotesSchema) {}
+export class UpdateReportReasonDto extends createZodDto(UpdateReportReasonSchema) {}
 export class QueryCopyrightReportsDto extends createZodDto(QueryCopyrightReportsSchema) {}
 
 export class CopyrightReportResponseDto extends createZodDto(CopyrightReportResponseSchema) {}

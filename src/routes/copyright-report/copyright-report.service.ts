@@ -5,6 +5,7 @@ import {
   CreateCopyrightReportDto,
   UpdateReportStatusDto,
   UpdateAdminNotesDto,
+  UpdateReportReasonDto,
   QueryCopyrightReportsDto,
 } from './copyright-report.dto'
 import {
@@ -88,6 +89,14 @@ export class CopyrightReportService {
     return result
   }
 
+  async getReportedSongIds(userId: number): Promise<number[]> {
+    const songIds = await this.repository.getReportedSongIdsByUser(userId)
+
+    this.logger.log(`Retrieved ${songIds.length} reported song IDs for user ${userId}`)
+
+    return songIds
+  }
+
   async updateStatus(id: number, data: UpdateReportStatusDto, roleName?: string) {
     if (roleName !== 'ADMIN') {
       throw AdminRoleRequiredException
@@ -161,6 +170,35 @@ export class CopyrightReportService {
     }
 
     return true
+  }
+
+  async updateUserReport(id: number, userId: number, data: UpdateReportReasonDto) {
+    await this.checkReportAccess(id, userId)
+
+    const report = await this.repository.findById(id)
+
+    if (report?.status !== ReportStatus.Pending) {
+      throw ReportAlreadyResolvedException
+    }
+
+    const updated = await this.repository.updateReportReason(id, data.reportReason)
+
+    this.logger.log(`User ${userId} updated report ${id} reason`)
+
+    return updated
+  }
+
+  async deleteUserReport(id: number, userId: number) {
+    await this.checkReportAccess(id, userId)
+
+    await this.repository.delete(id)
+
+    this.logger.log(`User ${userId} deleted report ${id}`)
+
+    return {
+      success: true,
+      message: 'Copyright report deleted successfully',
+    }
   }
 
   private validateStatusTransition(currentStatus: ReportStatus, newStatus: ReportStatus) {

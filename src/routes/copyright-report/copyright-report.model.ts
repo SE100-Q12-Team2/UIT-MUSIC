@@ -30,6 +30,10 @@ export const UpdateAdminNotesSchema = z.object({
   adminNotes: z.string().min(1).max(5000),
 })
 
+export const UpdateReportReasonSchema = z.object({
+  reportReason: z.string().min(10).max(2000),
+})
+
 export const QueryCopyrightReportsSchema = z.object({
   page: z
     .string()
@@ -99,6 +103,7 @@ export type CopyrightReport = z.infer<typeof CopyrightReportSchema>
 export type CreateCopyrightReportDto = z.infer<typeof CreateCopyrightReportSchema>
 export type UpdateReportStatusDto = z.infer<typeof UpdateReportStatusSchema>
 export type UpdateAdminNotesDto = z.infer<typeof UpdateAdminNotesSchema>
+export type UpdateReportReasonDto = z.infer<typeof UpdateReportReasonSchema>
 export type QueryCopyrightReportsDto = z.infer<typeof QueryCopyrightReportsSchema>
 export type CopyrightReportResponse = z.infer<typeof CopyrightReportResponseSchema>
 export type CopyrightReportListResponse = z.infer<typeof CopyrightReportListResponseSchema>

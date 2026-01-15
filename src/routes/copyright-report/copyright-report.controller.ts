@@ -5,6 +5,7 @@ import {
   CreateCopyrightReportDto,
   UpdateReportStatusDto,
   UpdateAdminNotesDto,
+  UpdateReportReasonDto,
   QueryCopyrightReportsDto,
   CopyrightReportResponseDto,
   CopyrightReportListResponseDto,
@@ -83,6 +84,28 @@ export class CopyrightReportController {
     }
   }
 
+  @Get('my-reported-songs')
+  @Auth([AuthType.Bearer])
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Get IDs of songs I have reported',
+    description: 'Retrieve list of song IDs that have active reports (Pending or UnderReview) from the authenticated user.',
+  })
+  @ApiOkResponse({ description: 'Reported song IDs retrieved successfully', schema: { type: 'array', items: { type: 'number' } } })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
+  async getMyReportedSongs(@ActiveUser('userId') userId: number) {
+    try {
+      this.logger.log(`Get reported song IDs for user ${userId}`)
+      const songIds = await this.copyrightReportService.getReportedSongIds(userId)
+      this.logger.log(`Retrieved ${songIds.length} reported song IDs for user ${userId}`)
+      return songIds
+    } catch (error) {
+      this.logger.error(`Failed to get reported song IDs for user ${userId}`, error.stack)
+      throw error
+    }
+  }
+
   @Get('my-reports/:id')
   @Auth([AuthType.Bearer])
   @HttpCode(HttpStatus.OK)
@@ -105,6 +128,61 @@ export class CopyrightReportController {
       return result
     } catch (error) {
       this.logger.error(`Failed to get report ${id} for user ${userId}`, error.stack)
+      throw error
+    }
+  }
+
+  @Patch('my-reports/:id')
+  @Auth([AuthType.Bearer])
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ZodSerializerDto(CopyrightReportResponseDto)
+  @ApiOperation({
+    summary: 'Update my copyright report',
+    description: 'Update the reason for a copyright report submitted by the authenticated user. Only pending reports can be updated.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Copyright report ID' })
+  @ApiBody({ type: UpdateReportReasonDto, description: 'Updated report reason' })
+  @ApiOkResponse({ description: 'Report updated successfully', type: CopyrightReportResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid data or report cannot be updated' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
+  @ApiNotFoundResponse({ description: 'Report not found or access denied' })
+  async updateMyReport(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDto: UpdateReportReasonDto,
+    @ActiveUser('userId') userId: number,
+  ) {
+    try {
+      this.logger.log(`Update report ${id} by user ${userId}`)
+      const result = await this.copyrightReportService.updateUserReport(id, userId, updateDto)
+      this.logger.log(`Report ${id} updated successfully`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to update report ${id} for user ${userId}`, error.stack)
+      throw error
+    }
+  }
+
+  @Delete('my-reports/:id')
+  @Auth([AuthType.Bearer])
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Delete my copyright report',
+    description: 'Delete a copyright report submitted by the authenticated user. This action is permanent.',
+  })
+  @ApiParam({ name: 'id', type: Number, description: 'Copyright report ID' })
+  @ApiOkResponse({ description: 'Report deleted successfully' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized - Invalid or missing JWT token' })
+  @ApiNotFoundResponse({ description: 'Report not found or access denied' })
+  async deleteMyReport(@Param('id', ParseIntPipe) id: number, @ActiveUser('userId') userId: number) {
+    try {
+      this.logger.log(`Delete report ${id} by user ${userId}`)
+      const result = await this.copyrightReportService.deleteUserReport(id, userId)
+      this.logger.log(`Report ${id} deleted successfully`)
+      return result
+    } catch (error) {
+      this.logger.error(`Failed to delete report ${id} for user ${userId}`, error.stack)
       throw error
     }
   }
