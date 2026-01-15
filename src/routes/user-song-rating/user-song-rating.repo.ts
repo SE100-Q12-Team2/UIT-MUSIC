@@ -201,7 +201,9 @@ export class UserSongRatingRepository {
 
     const where: Prisma.UserSongRatingWhereInput = {
       userId,
-      rating: Rating.Like,
+      rating: {
+        in: [Rating.THREE_STAR, Rating.FOUR_STAR, Rating.FIVE_STAR],
+      },
     }
 
     const [data, total] = await Promise.all([
@@ -338,15 +340,24 @@ export class UserSongRatingRepository {
   }
 
   async getSongRatingStats(songId: number, userId?: number) {
-    const [totalRatings, likes, dislikes, userRating] = await Promise.all([
+    const [totalRatings, oneStar, twoStar, threeStar, fourStar, fiveStar, userRating] = await Promise.all([
       this.prisma.userSongRating.count({
         where: { songId },
       }),
       this.prisma.userSongRating.count({
-        where: { songId, rating: Rating.Like },
+        where: { songId, rating: Rating.ONE_STAR },
       }),
       this.prisma.userSongRating.count({
-        where: { songId, rating: Rating.Dislike },
+        where: { songId, rating: Rating.TWO_STAR },
+      }),
+      this.prisma.userSongRating.count({
+        where: { songId, rating: Rating.THREE_STAR },
+      }),
+      this.prisma.userSongRating.count({
+        where: { songId, rating: Rating.FOUR_STAR },
+      }),
+      this.prisma.userSongRating.count({
+        where: { songId, rating: Rating.FIVE_STAR },
       }),
       userId
         ? this.prisma.userSongRating.findUnique({
@@ -361,30 +372,30 @@ export class UserSongRatingRepository {
         : null,
     ])
 
-    const likePercentage = totalRatings > 0 ? (likes / totalRatings) * 100 : 0
-    const dislikePercentage = totalRatings > 0 ? (dislikes / totalRatings) * 100 : 0
+    const ratingSum = oneStar * 1 + twoStar * 2 + threeStar * 3 + fourStar * 4 + fiveStar * 5
+    const averageRating = totalRatings > 0 ? parseFloat((ratingSum / totalRatings).toFixed(2)) : 0
 
     return {
       songId,
       totalRatings,
-      likes,
-      dislikes,
-      likePercentage: parseFloat(likePercentage.toFixed(2)),
-      dislikePercentage: parseFloat(dislikePercentage.toFixed(2)),
+      averageRating,
+      oneStar,
+      twoStar,
+      threeStar,
+      fourStar,
+      fiveStar,
       userRating: userRating?.rating || null,
     }
   }
 
   async getUserRatingStats(userId: number) {
-    const [totalRatings, totalLikes, totalDislikes, recentRatings] = await Promise.all([
+    const [totalRatings, allRatings, recentRatings] = await Promise.all([
       this.prisma.userSongRating.count({
         where: { userId },
       }),
-      this.prisma.userSongRating.count({
-        where: { userId, rating: Rating.Like },
-      }),
-      this.prisma.userSongRating.count({
-        where: { userId, rating: Rating.Dislike },
+      this.prisma.userSongRating.findMany({
+        where: { userId },
+        select: { rating: true },
       }),
       this.prisma.userSongRating.findMany({
         where: { userId },
@@ -401,10 +412,19 @@ export class UserSongRatingRepository {
       }),
     ])
 
+    const ratingMap = {
+      [Rating.ONE_STAR]: 1,
+      [Rating.TWO_STAR]: 2,
+      [Rating.THREE_STAR]: 3,
+      [Rating.FOUR_STAR]: 4,
+      [Rating.FIVE_STAR]: 5,
+    }
+    const ratingSum = allRatings.reduce((sum, r) => sum + ratingMap[r.rating], 0)
+    const averageRating = totalRatings > 0 ? parseFloat((ratingSum / totalRatings).toFixed(2)) : 0
+
     return {
       totalRatings,
-      totalLikes,
-      totalDislikes,
+      averageRating,
       recentlyRated: recentRatings.map((r) => ({
         songId: r.songId,
         songTitle: r.song.title,

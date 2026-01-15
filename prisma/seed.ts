@@ -11,6 +11,7 @@ import {
   NotificationType,
   ReporterType,
   CopyrightStatus,
+  Rating,
   type Song,
   RecordLabelType,
 } from '@prisma/client'
@@ -361,7 +362,16 @@ async function main() {
         data: {
           userId: user.id,
           songId: song.id,
-          rating: faker.helpers.arrayElement(['Like', 'Dislike']),
+          rating: faker.helpers.arrayElement([
+            Rating.ONE_STAR,
+            Rating.TWO_STAR,
+            Rating.THREE_STAR,
+            Rating.FOUR_STAR,
+            Rating.FIVE_STAR,
+          ]),
+          comment: faker.datatype.boolean({ probability: 0.3 })
+            ? faker.lorem.sentence()
+            : undefined,
         },
       })
     }

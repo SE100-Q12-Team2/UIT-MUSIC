@@ -70,17 +70,18 @@ export const RatingListResponseSchema = z.object({
 export const SongRatingStatsSchema = z.object({
   songId: z.number().int().positive(),
   totalRatings: z.number().int().nonnegative(),
-  likes: z.number().int().nonnegative(),
-  dislikes: z.number().int().nonnegative(),
-  likePercentage: z.number().nonnegative(),
-  dislikePercentage: z.number().nonnegative(),
+  averageRating: z.number().nonnegative(),
+  oneStar: z.number().int().nonnegative(),
+  twoStar: z.number().int().nonnegative(),
+  threeStar: z.number().int().nonnegative(),
+  fourStar: z.number().int().nonnegative(),
+  fiveStar: z.number().int().nonnegative(),
   userRating: RatingEnum.nullable(),
 })
 
 export const UserRatingStatsSchema = z.object({
   totalRatings: z.number().int().nonnegative(),
-  totalLikes: z.number().int().nonnegative(),
-  totalDislikes: z.number().int().nonnegative(),
+  averageRating: z.number().nonnegative(),
   recentlyRated: z.array(
     z.object({
       songId: z.number().int().positive(),
