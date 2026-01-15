@@ -60,7 +60,7 @@ export class CopyrightReportService {
   }
 
   async findAll(query: QueryCopyrightReportsDto, roleName?: string) {
-    if (roleName !== 'ADMIN') {
+    if (roleName !== 'Admin') {
       throw AdminRoleRequiredException
     }
 
@@ -98,7 +98,7 @@ export class CopyrightReportService {
   }
 
   async updateStatus(id: number, data: UpdateReportStatusDto, roleName?: string) {
-    if (roleName !== 'ADMIN') {
+    if (roleName !== 'Admin') {
       throw AdminRoleRequiredException
     }
 
@@ -126,7 +126,7 @@ export class CopyrightReportService {
   }
 
   async delete(id: number, roleName?: string) {
-    if (roleName !== 'ADMIN') {
+    if (roleName !== 'Admin') {
       throw AdminRoleRequiredException
     }
 
@@ -147,7 +147,7 @@ export class CopyrightReportService {
   }
 
   async getStats(roleName?: string) {
-    if (roleName !== 'ADMIN') {
+    if (roleName !== 'Admin') {
       throw AdminRoleRequiredException
     }
 
